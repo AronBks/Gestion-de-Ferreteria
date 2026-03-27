@@ -1,0 +1,334 @@
+# ============================================================================
+# GITIGNORE - Ferretería POS
+# Archivos y carpetas a ignorar en git
+# ============================================================================
+
+# ============================================================================
+# ENTORNO Y CONFIGURACIÓN (SECRETOS)
+# ============================================================================
+.env
+.env.local
+.env.*.local
+.env.production
+config/local.json
+config/production.json
+backend/.env
+*.key
+*.pem
+
+# ============================================================================
+# APLICACIONES Y IDEs
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.log
+.vagrant
+Vagrantfile
+
+# ============================================================================
+# NODE.JS / NPM (BACKEND)
+# ============================================================================
+backend/node_modules/
+backend/dist/
+backend/npm-debug.log
+backend/npm-error.log
+backend/yarn-error.log
+backend/yarn-debug.log
+backend/package-lock.json
+backend/yarn.lock
+backend/pnpm-lock.yaml
+backend/lerna-debug.log
+
+# ============================================================================
+# NODE.JS / NPM (FRONTEND)
+# ============================================================================
+frontend/node_modules/
+frontend/dist/
+frontend/npm-debug.log
+frontend/npm-error.log
+frontend/yarn-error.log
+frontend/yarn-debug.log
+frontend/package-lock.json
+frontend/yarn.lock
+frontend/pnpm-lock.yaml
+
+# ============================================================================
+# BUILD Y DISTRIBUCIÓN
+# ============================================================================
+build/
+dist/
+out/
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+*.deb
+*.rpm
+*.tar.gz
+
+# ============================================================================
+# TESTING
+# ============================================================================
+coverage/
+.nyc_output/
+.jest/
+test-results/
+
+# ============================================================================
+# ARCHIVOS DEL SISTEMA
+# ============================================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ============================================================================
+# ARCHIVOS TEMPORALES
+# ============================================================================
+*.tmp
+*.temp
+*.swp
+*~
+.#*
+
+# ============================================================================
+# DATABASES (Locales)
+# ============================================================================
+*.db
+*.sqlite
+*.sqlite3
+backup*.sql
+dump*.sql
+
+# ============================================================================
+# OS
+# ============================================================================
+.DS_Store
+Thumbs.db
+.env.vault
+
+# ============================================================================
+# IDE Settings (Personales)
+# ============================================================================
+.vscode/settings.json
+.vscode/launch.json
+.idea/workspace.xml
+.idea/modules.xml
+
+# ============================================================================
+dist/
+build/
+out/
+.next
+.nuxt
+coverage/
+.nyc_output
+*.tsbuildinfo
+
+# ============================================================================
+# BACKEND - NestJS
+# ============================================================================
+backend/dist/
+backend/node_modules/
+backend/.env
+backend/.env.local
+backend/logs/
+backend/uploads/
+backend/.eslintcache
+backend/typeorm-config.json
+backend/ormconfig.json
+
+# ============================================================================
+# FRONTEND - Angular
+# ============================================================================
+frontend/dist/
+frontend/node_modules/
+frontend/.env
+frontend/.angular/
+frontend/.cache
+frontend/src/environments/environment.prod.ts
+frontend/src/environments/environment.local.ts
+
+# ============================================================================
+# BASE DE DATOS
+# ============================================================================
+*.sql.bak
+*.sql.backup
+*.dump
+*.gzip
+database/backups/*.sql
+database/backups/*.gz
+database/migrations/**/old/
+pg_hba.conf
+postgresql.conf
+
+# ============================================================================
+# DOCKER
+# ============================================================================
+.dockerignore
+docker-compose.override.yml
+
+# ============================================================================
+# LOGS Y TEMPORALES
+# ============================================================================
+logs/
+*.log
+*.log.*
+tmp/
+temp/
+cache/
+.cache/
+
+# ============================================================================
+# SECRETOS Y CREDENCIALES
+# ============================================================================
+*.pem
+*.key
+*.cert
+*.crt
+.ssh/
+.gnupg/
+credentials.json
+secrets.json
+auth.json
+
+# ============================================================================
+# UPLOADS Y ARCHIVOS GENERADOS
+# ============================================================================
+uploads/
+generated/
+tmp/
+temp/
+*.zip
+*.tar.gz
+*.tar
+
+# ============================================================================
+# TESTING
+# ============================================================================
+coverage/
+.nyc_output/
+junit.xml
+test-results/
+*.lcov
+
+# ============================================================================
+# DEPENDENCIAS INSTALADAS
+# ============================================================================
+node_modules/
+/.pnp
+.pnp.js
+
+# ============================================================================
+# MISC
+# ============================================================================
+.vscode-test
+.vscode settings.json (usuarios específicos)
+*.vsix
+.editorconfig (si es específico del usuario)
+
+# ============================================================================
+# COMPILADOS
+# ============================================================================
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+
+# ============================================================================
+# ARCHIVOS DEL SISTEMA
+# ============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# ============================================================================
+# IDE ESPECÍFICOS
+# ============================================================================
+# VSCode
+.vscode
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+.gradle
+
+# WebStorm
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+.vim/
+*.swp
+*.swo
+
+# ============================================================================
+# SISTEMA ESPECÍFICO
+# ============================================================================
+# macOS
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.gvfs
+
+# ============================================================================
+# IGNORAR EXCEPCIONES (usar ! para incluir)
+# ============================================================================
+# Incluir archivos de configuración de ejemplo
+!.env.example
+!.env.production.example
+!.vscode/settings.json.example
+!.vscode/launch.json
+
+# Incluir template files
+!src/**/*.template.*
+!templates/**/*.html
+
+# Incluir documentación importante
+!docs/**
+!README.md
+!ARCHITECTURE.md
+
+# ============================================================================
+# FIN
+# ============================================================================
