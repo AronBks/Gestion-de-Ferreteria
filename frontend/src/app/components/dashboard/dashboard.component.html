@@ -1,0 +1,64 @@
+<div class="dashboard-container">
+  <aside class="sidebar" [class.closed]="!sidebarOpen">
+    <div class="sidebar-header">
+      <h2 class="logo">🏗️ Ferretería</h2>
+      <button class="btn-toggle" (click)="toggleSidebar()">
+        <i class="icon">☰</i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a routerLink="/dashboard/productos" routerLinkActive="active" class="nav-link">
+            <span class="icon">📦</span>
+            <span class="label">Productos</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/dashboard/ventas" routerLinkActive="active" class="nav-link">
+            <span class="icon">💰</span>
+            <span class="label">Ventas</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/dashboard/usuarios" routerLinkActive="active" class="nav-link">
+            <span class="icon">👥</span>
+            <span class="label">Usuarios</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/dashboard/reportes" routerLinkActive="active" class="nav-link">
+            <span class="icon">📊</span>
+            <span class="label">Reportes</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn btn-danger w-100" (click)="logout()">
+        <span class="icon">🚪</span>
+        <span class="label">Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <button class="btn-menu" (click)="toggleSidebar()">
+        <span>☰</span>
+      </button>
+      <h1 class="page-title">Bienvenido, {{ userName }}</h1>
+      <div class="top-bar-right">
+        <button class="btn-user" (click)="logout()">
+          👤 Perfil
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

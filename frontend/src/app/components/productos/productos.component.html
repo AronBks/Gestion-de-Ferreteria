@@ -1,0 +1,107 @@
+<div class="productos-container">
+  <div class="productos-header">
+    <h2 class="page-subtitle">📦 Gestión de Productos</h2>
+    <button class="btn btn-success">+ Nuevo Producto</button>
+  </div>
+
+  <div class="productos-controls">
+    <div class="search-box">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="🔍 Buscar productos..."
+        [(ngModel)]="searchTerm"
+      />
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show">
+    <strong>Error:</strong> {{ errorMessage }}
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead class="table-header">
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th class="text-right">Precio Costo</th>
+          <th class="text-right">Precio Venta</th>
+          <th class="text-right">Ganancia</th>
+          <th class="text-center">Stock</th>
+          <th class="text-center">Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading" class="loading-row">
+          <td colspan="9" class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngFor="let producto of productos" class="product-row">
+          <td class="codigo-cell">
+            <span class="badge bg-light text-dark">{{ producto.codigo_producto }}</span>
+          </td>
+          <td class="nombre-cell">
+            <strong>{{ producto.nombre }}</strong>
+          </td>
+          <td class="descripcion-cell">
+            <small class="text-muted">{{ producto.descripcion || 'N/A' }}</small>
+          </td>
+          <td class="text-right">
+            <span class="price-costo">${{ producto.precio_costo.toFixed(2) }}</span>
+          </td>
+          <td class="text-right">
+            <span class="price-venta">${{ producto.precio_venta.toFixed(2) }}</span>
+          </td>
+          <td class="text-right">
+            <span class="ganancia-badge" [class]="calcularGanancia(producto) > 0 ? 'positive' : 'negative'">
+              ${{ calcularGanancia(producto).toFixed(2) }}
+            </span>
+          </td>
+          <td class="stock-cell">
+            <span [class]="producto.stock_actual > 10 ? 'stock-alto' : 'stock-bajo'">
+              {{ producto.stock_actual }} unids
+            </span>
+          </td>
+          <td class="text-center">
+            <span [class]="'badge ' + obtenerEstadoBadge(producto.estado)">
+              {{ producto.estado }}
+            </span>
+          </td>
+          <td class="acciones-cell">
+            <button class="btn btn-sm btn-primary" title="Editar">
+              ✏️
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="eliminarProducto(producto.id, producto.nombre)" title="Eliminar">
+              🗑️
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="!loading && productos.length === 0" class="empty-row">
+          <td colspan="9" class="text-center text-muted">
+            <p>No hay productos para mostrar</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-control">
+    <button class="btn btn-sm btn-outline-secondary" (click)="paginaAnterior()" [disabled]="currentPage === 1">
+      ← Anterior
+    </button>
+    <span class="pagination-info">
+      Página {{ currentPage }} de {{ totalPages }} ({{ totalProducts }} productos)
+    </span>
+    <button class="btn btn-sm btn-outline-secondary" (click)="siguientePagina()" [disabled]="currentPage === totalPages">
+      Siguiente →
+    </button>
+  </div>
+</div>

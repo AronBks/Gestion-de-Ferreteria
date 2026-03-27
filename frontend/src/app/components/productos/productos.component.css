@@ -1,0 +1,217 @@
+.productos-container {
+  padding: 1.5rem;
+}
+
+.productos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 1.75rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.productos-controls {
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-box .form-control {
+  border-radius: 6px;
+  border: 2px solid #ecf0f1;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+}
+
+.search-box .form-control:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.table-responsive {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table-header {
+  background: linear-gradient(180deg, #34495e 0%, #2c3e50 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.table-header th {
+  border: none;
+  padding: 1rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.product-row {
+  border-bottom: 1px solid #ecf0f1;
+  transition: all 0.3s ease;
+}
+
+.product-row:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) inset;
+}
+
+.product-row td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.codigo-cell {
+  font-weight: 600;
+}
+
+.nombre-cell {
+  color: #2c3e50;
+}
+
+.descripcion-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.price-costo {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.price-venta {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.ganancia-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.ganancia-badge.positive {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.ganancia-badge.negative {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.stock-cell {
+  font-weight: 600;
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+}
+
+.stock-alto {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.stock-bajo {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.acciones-cell {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.acciones-cell .btn {
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.acciones-cell .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.loading-row td {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.spinner-border {
+  color: #3498db;
+}
+
+.empty-row td {
+  padding: 3rem 1rem;
+  font-size: 1rem;
+}
+
+.pagination-control {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pagination-info {
+  font-weight: 600;
+  color: #2c3e50;
+  min-width: 200px;
+  text-align: center;
+}
+
+.pagination-control .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.85rem;
+  }
+
+  .table-header th,
+  .product-row td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 1.3rem;
+  }
+
+  .desc-cell {
+    display: none;
+  }
+}
