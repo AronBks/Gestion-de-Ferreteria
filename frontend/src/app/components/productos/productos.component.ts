@@ -1,17 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductosService } from '../../services/productos.service';
 import { Producto } from '../../models/producto.model';
+import { CurrencyBoliviaPipe } from '../../pipes/currency-bolivia.pipe';
+import { Subject } from 'rxjs';
+import { takeUntil, timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyBoliviaPipe],
   templateUrl: './productos.component.html',
-  styleUrls: ['./productos.component.css']
+  styleUrls: ['./productos.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductosComponent implements OnInit {
+export class ProductosComponent implements OnInit, OnDestroy {
   productos: Producto[] = [];
   loading: boolean = false;
   currentPage: number = 1;
@@ -20,8 +24,12 @@ export class ProductosComponent implements OnInit {
   totalPages: number = 1;
   searchTerm: string = '';
   errorMessage: string = '';
+  private destroy$ = new Subject<void>();
 
-  constructor(private productosService: ProductosService) { }
+  constructor(
+    private productosService: ProductosService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.cargarProductos();
@@ -30,20 +38,30 @@ export class ProductosComponent implements OnInit {
   cargarProductos(): void {
     this.loading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
-    this.productosService.obtenerProductos(this.currentPage, this.pageSize).subscribe({
-      next: (response) => {
-        this.productos = response.data;
-        this.totalProducts = response.total;
-        this.totalPages = response.totalPages;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.loading = false;
-        this.errorMessage = 'Error al cargar los productos';
-        console.error('Error:', err);
-      }
-    });
+    this.productosService.obtenerProductos(this.currentPage, this.pageSize)
+      .pipe(
+        timeout(10000), // 10 segundos timeout
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (response) => {
+          this.productos = response.data || [];
+          this.totalProducts = response.total || 0;
+          this.totalPages = response.totalPages || 1;
+          this.loading = false;
+          this.errorMessage = '';
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error al cargar productos:', err);
+          this.loading = false;
+          this.productos = [];
+          this.errorMessage = 'Error al cargar los productos. Intenta nuevamente.';
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   eliminarProducto(id: string, nombre: string): void {
@@ -88,5 +106,10 @@ export class ProductosComponent implements OnInit {
       default:
         return 'badge-secondary';
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

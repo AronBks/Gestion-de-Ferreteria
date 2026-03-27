@@ -1,6 +1,9 @@
 <div class="productos-container">
   <div class="productos-header">
-    <h2 class="page-subtitle">📦 Gestión de Productos</h2>
+    <div>
+      <h2 class="page-subtitle">📦 Gestión de Productos</h2>
+      <p class="text-muted" style="font-size: 0.9rem;">Sistema de Ferretería Bolivia 🇧🇴 • Precios en Bolivianos (Bs.)</p>
+    </div>
     <button class="btn btn-success">+ Nuevo Producto</button>
   </div>
 
@@ -54,14 +57,14 @@
             <small class="text-muted">{{ producto.descripcion || 'N/A' }}</small>
           </td>
           <td class="text-right">
-            <span class="price-costo">${{ producto.precio_costo.toFixed(2) }}</span>
+            <span class="price-costo">{{ producto.precio_costo | currencyBolivia }}</span>
           </td>
           <td class="text-right">
-            <span class="price-venta">${{ producto.precio_venta.toFixed(2) }}</span>
+            <span class="price-venta">{{ producto.precio_venta | currencyBolivia }}</span>
           </td>
           <td class="text-right">
             <span class="ganancia-badge" [class]="calcularGanancia(producto) > 0 ? 'positive' : 'negative'">
-              ${{ calcularGanancia(producto).toFixed(2) }}
+              {{ calcularGanancia(producto) | currencyBolivia }}
             </span>
           </td>
           <td class="stock-cell">

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -8,9 +8,10 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  styleUrls: ['./dashboard.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   sidebarOpen: boolean = true;
   userName: string = 'Administrador';
 
@@ -18,6 +19,15 @@ export class DashboardComponent {
     private authService: AuthService,
     private router: Router
   ) { }
+
+  ngOnInit(): void {
+    // Obtener nombre de usuario del auth service
+    this.authService.auth$.subscribe(authState => {
+      if (authState.user?.nombre) {
+        this.userName = authState.user.nombre;
+      }
+    });
+  }
 
   toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen;
