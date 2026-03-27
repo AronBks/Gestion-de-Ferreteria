@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { UsuariosService } from '../usuarios/usuarios.service';
 import { LoginDto } from './dto/login.dto';
 
@@ -20,9 +21,9 @@ export class AuthService {
       throw new UnauthorizedException('Email o contraseña incorrectos');
     }
 
-    // Validar contraseña (en BD están en bcrypt, pero para primer test usamos direktamente)
-    // En producción, usar: await bcrypt.compare(password, usuario.password)
-    if (usuario.password !== password) {
+    // Validar contraseña con bcrypt
+    const passwordValid = await bcrypt.compare(password, usuario.password);
+    if (!passwordValid) {
       throw new UnauthorizedException('Email o contraseña incorrectos');
     }
 
