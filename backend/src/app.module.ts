@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { typeOrmAsyncConfig } from './database';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module';
       typeOrmAsyncConfig(new ConfigService()),
     ),
     UsuariosModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
