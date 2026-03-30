@@ -324,39 +324,7 @@ WHERE datname = 'ferreteria_pos' AND pid <> pg_backend_pid();
 
 ---
 
-## 🐳 8. Con Docker (Opcional)
-
-### Construir Imágenes
-
-```bash
-# En la raíz del proyecto
-docker-compose build
-```
-
-### Ejecutar Contenedores
-
-```bash
-# Iniciar todos los servicios
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
-
-# Detener
-docker-compose down
-
-# Ver servicios corriendo
-docker-compose ps
-```
-
-### Servicios Disponibles
-
-- **Frontend**: http://localhost:4200
-- **Backend**: http://localhost:3000
-- **PostgreSQL**: localhost:5432
-- **pgAdmin**: http://localhost:5050
-
----
+**¡Listo! Tu Ferretería POS está completamente instalada y lista para usar.** 🎉
 
 ## 🐛 Troubleshooting
 

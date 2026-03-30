@@ -22,7 +22,7 @@
 - [x] **QUICK_START.md** - Guía de inicio paso a paso
 
 ### Infraestructura
-- [x] **docker-compose.yml** - PostgreSQL, pgAdmin, Redis, Backend, Frontend
+- [x] **docker-compose.yml** - PostgreSQL, pgAdmin
 - [x] **.env.example** - 60+ variables de configuración
 - [x] **.gitignore** - Git exclusiones profesionales
 - [x] **setup.bat** - Automatización Windows
@@ -77,8 +77,6 @@
 ### DevOps & Deployment
 - [ ] **CI/CD Pipeline** - GitHub Actions o similar
 - [ ] **SonarQube** - Code quality
-- [ ] **Docker Registry** - Imágenes personalizadas
-- [ ] **Kubernetes** - Orquestación (opcional)
 - [ ] **SSL/TLS** - Certificados
 - [ ] **Backup Strategy** - BD + archivos
 
@@ -108,10 +106,7 @@ TOTAL:                      █████░░░░░░░░░░░░�
 2. ✅ Verificar BD en pgAdmin
    SELECT COUNT(*) FROM usuarios;
 
-3. ⏳ Instalar Docker Desktop (opcional pero recomendado)
-   https://www.docker.com/products/docker-desktop
-
-4. ⏳ Iniciar versionado Git
+3. ⏳ Iniciar versionado Git
    git init
    git add .
    git commit -m "Initial: Ferretería POS v1.0"
@@ -137,8 +132,7 @@ TOTAL:                      █████░░░░░░░░░░░░�
 ```
 1. Testing completo
 2. CI/CD pipeline
-3. Docker + producción
-4. Deployment
+3. Deployment en producción
 ```
 
 ---
@@ -159,13 +153,11 @@ ferreteria/
 │   ├── BUSINESS_FLOWS.md             ✅ 25 págs
 │   └── QUICK_START.md                ✅ 15 págs
 │
-├── docker-compose.yml                ✅
 ├── .env.example                      ✅
 ├── .gitignore                        ✅
 ├── setup.bat                         ✅
 ├── setup.sh                          ✅
 ├── README.md                         ✅
-├── RESUMEN_EJECUTIVO.md              ✅
 ├── CONFIGURACION_RAPIDA.md           ✅ (NUEVO)
 ├── PROJECT_STATUS.md                 ✅ (NUEVO)
 │
@@ -188,8 +180,6 @@ ferreteria/
 | **Angular** | ⏳ | 18+ | Frontend |
 | **TypeScript** | ⏳ | 5+ | Lenguaje |
 | **TypeORM** | ⏳ | 0.3+ | ORM |
-| **Redis** | ⏳ | 7+ | Caché (opcional) |
-| **Docker** | ✅ | 20+ | Contenedores |
 
 ---
 
@@ -241,7 +231,6 @@ DESC vw_inventario_actual;
 |----------|----------|
 | BD no se crea | Ver CONFIGURACION_RAPIDA.md § Troubleshooting |
 | Setup.bat no funciona | Ejecutar como Administrador |
-| Docker no inicia | Instalar Docker Desktop |
 | Views no aparecen | Reiniciar pgAdmin conexión |
 
 ---
