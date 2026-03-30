@@ -4,7 +4,7 @@
       <h2 class="page-subtitle">📦 Gestión de Productos</h2>
       <p class="text-muted" style="font-size: 0.9rem;">Sistema de Ferretería Bolivia 🇧🇴 • Precios en Bolivianos (Bs.)</p>
     </div>
-    <button class="btn btn-success">+ Nuevo Producto</button>
+    <button class="btn btn-success" (click)="abrirModalCrear()">+ Nuevo Producto</button>
   </div>
 
   <div class="productos-controls">
@@ -78,10 +78,10 @@
             </span>
           </td>
           <td class="acciones-cell">
-            <button class="btn btn-sm btn-primary" title="Editar">
+            <button class="btn btn-sm btn-primary" (click)="abrirModalEditar(producto)" title="Editar">
               ✏️
             </button>
-            <button class="btn btn-sm btn-danger" (click)="eliminarProducto(producto.id, producto.nombre)" title="Eliminar">
+            <button class="btn btn-sm btn-danger" (click)="abrirModalEliminar(producto)" title="Eliminar">
               🗑️
             </button>
           </td>
@@ -108,3 +108,20 @@
     </button>
   </div>
 </div>
+
+<!-- Modal de Crear/Editar Producto -->
+<app-producto-form
+  [isVisible]="showFormModal"
+  [producto]="selectedProducto"
+  (close)="cerrarModalForm()"
+  (saved)="onProductoGuardado($event)"
+></app-producto-form>
+
+<!-- Modal de Confirmación de Eliminación -->
+<app-delete-confirmation
+  [isVisible]="showDeleteModal"
+  [productoId]="selectedProductoForDelete?.id || null"
+  [productoNombre]="selectedProductoForDelete?.nombre || null"
+  (close)="cerrarModalDelete()"
+  (confirmed)="onProductoEliminado()"
+></app-delete-confirmation>

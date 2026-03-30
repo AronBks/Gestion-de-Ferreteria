@@ -1,0 +1,135 @@
+<ng-container *ngIf="isVisible">
+  <div class="modal-overlay" (click)="closeModal()"></div>
+  <div class="modal-dialog-container">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ isEditMode ? '✏️ Editar Producto' : '➕ Nuevo Producto' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
+          <strong>Error:</strong> {{ errorMessage }}
+          <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <!-- Código Producto -->
+          <div class="form-group mb-3">
+            <label class="form-label">Código <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              [class.is-invalid]="form.get('codigo_producto')?.invalid && form.get('codigo_producto')?.touched"
+              formControlName="codigo_producto"
+              placeholder="ej: CEME-001"
+            />
+            <div class="invalid-feedback" *ngIf="form.get('codigo_producto')?.invalid && form.get('codigo_producto')?.touched">
+              {{ getFieldError('codigo_producto') }}
+            </div>
+          </div>
+
+          <!-- Nombre -->
+          <div class="form-group mb-3">
+            <label class="form-label">Nombre <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              [class.is-invalid]="form.get('nombre')?.invalid && form.get('nombre')?.touched"
+              formControlName="nombre"
+              placeholder="Nombre del producto"
+            />
+            <div class="invalid-feedback" *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched">
+              {{ getFieldError('nombre') }}
+            </div>
+          </div>
+
+          <!-- Descripción -->
+          <div class="form-group mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea
+              class="form-control"
+              formControlName="descripcion"
+              placeholder="Descripción del producto"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- Row: Precios -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Precio Costo (Bs.) <span class="text-danger">*</span></label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="form.get('precio_costo')?.invalid && form.get('precio_costo')?.touched"
+                  formControlName="precio_costo"
+                  placeholder="0.00"
+                  step="0.01"
+                />
+                <div class="invalid-feedback" *ngIf="form.get('precio_costo')?.invalid && form.get('precio_costo')?.touched">
+                  {{ getFieldError('precio_costo') }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label class="form-label">Precio Venta (Bs.) <span class="text-danger">*</span></label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="form.get('precio_venta')?.invalid && form.get('precio_venta')?.touched"
+                  formControlName="precio_venta"
+                  placeholder="0.00"
+                  step="0.01"
+                />
+                <div class="invalid-feedback" *ngIf="form.get('precio_venta')?.invalid && form.get('precio_venta')?.touched">
+                  {{ getFieldError('precio_venta') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stock -->
+          <div class="form-group mb-3">
+            <label class="form-label">Stock Actual <span class="text-danger">*</span></label>
+            <input
+              type="number"
+              class="form-control"
+              [class.is-invalid]="form.get('stock_actual')?.invalid && form.get('stock_actual')?.touched"
+              formControlName="stock_actual"
+              placeholder="0"
+            />
+            <div class="invalid-feedback" *ngIf="form.get('stock_actual')?.invalid && form.get('stock_actual')?.touched">
+              {{ getFieldError('stock_actual') }}
+            </div>
+          </div>
+
+          <!-- Estado -->
+          <div class="form-group mb-3">
+            <label class="form-label">Estado</label>
+            <select class="form-control" formControlName="estado">
+              <option value="ACTIVO">Activo</option>
+              <option value="INACTIVO">Inactivo</option>
+            </select>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="loading">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="loading || form.invalid">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isEditMode ? 'Actualizar' : 'Crear' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

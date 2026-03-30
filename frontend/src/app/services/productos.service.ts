@@ -17,6 +17,7 @@ export class ProductosService {
 
   private getHeaders(): HttpHeaders {
     const token = this.authService.getToken();
+    
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });

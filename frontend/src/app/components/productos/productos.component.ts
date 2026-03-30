@@ -4,13 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { ProductosService } from '../../services/productos.service';
 import { Producto } from '../../models/producto.model';
 import { CurrencyBoliviaPipe } from '../../pipes/currency-bolivia.pipe';
+import { ProductoFormComponent } from './producto-form/producto-form.component';
+import { DeleteConfirmationComponent } from './delete-confirmation/delete-confirmation.component';
 import { Subject } from 'rxjs';
 import { takeUntil, timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyBoliviaPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CurrencyBoliviaPipe,
+    ProductoFormComponent,
+    DeleteConfirmationComponent
+  ],
   templateUrl: './productos.component.html',
   styleUrls: ['./productos.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -25,6 +33,12 @@ export class ProductosComponent implements OnInit, OnDestroy {
   searchTerm: string = '';
   errorMessage: string = '';
   private destroy$ = new Subject<void>();
+
+  // Modal estados
+  showFormModal = false;
+  showDeleteModal = false;
+  selectedProducto: Producto | null = null;
+  selectedProductoForDelete: Producto | null = null;
 
   constructor(
     private productosService: ProductosService,
@@ -64,19 +78,58 @@ export class ProductosComponent implements OnInit, OnDestroy {
       });
   }
 
-  eliminarProducto(id: string, nombre: string): void {
-    if (confirm(`¿Deseas eliminar el producto "${nombre}"?`)) {
-      this.productosService.eliminarProducto(id).subscribe({
-        next: () => {
-          this.errorMessage = '';
-          this.cargarProductos();
-        },
-        error: (err) => {
-          this.errorMessage = 'Error al eliminar el producto';
-          console.error('Error:', err);
-        }
-      });
-    }
+  // Modal de Crear Producto
+  abrirModalCrear(): void {
+    this.selectedProducto = null;
+    this.showFormModal = true;
+    this.cdr.markForCheck();
+  }
+
+  // Modal de Editar Producto
+  abrirModalEditar(producto: Producto): void {
+    console.log('✏️  Editando:', producto.nombre, '- ID:', producto.id);
+    this.selectedProducto = producto;
+    this.showFormModal = true;
+    this.cdr.markForCheck();
+    // Forzar segunda detección de cambios para que los inputs hijos se actualicen
+    setTimeout(() => this.cdr.markForCheck(), 0);
+  }
+
+  // Cerrar Modal de Formulario
+  cerrarModalForm(): void {
+    this.showFormModal = false;
+    this.selectedProducto = null;
+    this.cdr.markForCheck();
+  }
+
+  // Al guardar producto
+  onProductoGuardado(producto: Producto): void {
+    this.cargarProductos();
+  }
+
+  // Modal de Eliminar
+  abrirModalEliminar(producto: Producto): void {
+    console.log('🗑️  Eliminando:', producto.nombre, '- ID:', producto.id);
+    this.selectedProductoForDelete = producto;
+    this.showDeleteModal = true;
+    this.cdr.markForCheck();
+    // Forzar segunda detección de cambios
+    setTimeout(() => this.cdr.markForCheck(), 0);
+  }
+
+  // Cerrar Modal de Eliminar
+  cerrarModalDelete(): void {
+    console.log('ProductosComponent: Cerrando modal de eliminación');
+    this.showDeleteModal = false;
+    this.selectedProductoForDelete = null;
+    this.cdr.markForCheck();
+  }
+
+  // Al confirmar eliminación
+  onProductoEliminado(): void {
+    console.log('✅ ProductosComponent: Producto eliminado, recargando lista...');
+    this.cerrarModalDelete();
+    this.cargarProductos();
   }
 
   siguientePagina(): void {

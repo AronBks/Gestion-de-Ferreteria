@@ -1,0 +1,47 @@
+<ng-container *ngIf="isVisible">
+  <div class="modal-overlay" (click)="closeModal()"></div>
+  <div class="modal-dialog-container">
+    <div class="modal-dialog">
+      <div class="modal-header danger">
+        <h5 class="modal-title">
+          ⚠️ Confirmar Eliminación
+        </h5>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
+          {{ errorMessage }}
+          <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+        </div>
+
+        <p class="confirmation-text">
+          ¿Estás seguro de que deseas eliminar el producto
+          <strong>"{{ productoNombre }}"</strong>?
+        </p>
+        <p class="text-muted">
+          Esta acción <strong>NO se puede deshacer</strong>.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeModal()"
+          [disabled]="loading"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirm()"
+          [disabled]="loading || !productoId"
+        >
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ loading ? 'Eliminando...' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

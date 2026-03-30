@@ -20,7 +20,12 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) { }
+  ) {
+    // Si ya estás logueado, ir al dashboard
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/dashboard/productos']);
+    }
+  }
 
   onLogin(): void {
     if (!this.email || !this.password) {
@@ -34,6 +39,7 @@ export class LoginComponent {
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (response) => {
         this.loading = false;
+        // El guardado en localStorage ya ocurre dentro del AuthService.login()
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
