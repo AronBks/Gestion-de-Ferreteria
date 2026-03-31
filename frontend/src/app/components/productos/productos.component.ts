@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ProductoFormComponent } from './producto-form/producto-form.component';
+import { DeleteConfirmationComponent } from './delete-confirmation/delete-confirmation.component';
+import { ProductoViewDetailsComponent } from './producto-view-details/producto-view-details.component';
 
 interface Producto {
   id: number;
@@ -18,7 +21,7 @@ interface Producto {
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProductoFormComponent, DeleteConfirmationComponent, ProductoViewDetailsComponent],
   template: `
     <div class="productos-container">
       <!-- Header -->
@@ -165,6 +168,30 @@ interface Producto {
           <option value="50">50 por página</option>
         </select>
       </div>
+
+      <!-- Modal: Nuevo/Editar Producto -->
+      <app-producto-form 
+        [isVisible]="mostrarFormulario"
+        [producto]="productoEdicion"
+        (close)="cerrarFormulario()"
+        (saved)="guardarProducto($event)">
+      </app-producto-form>
+
+      <!-- Modal: Confirmación de Eliminación -->
+      <app-delete-confirmation
+        [isVisible]="mostrarConfirmacion"
+        [titulo]="'Eliminar Producto'"
+        [mensaje]="'¿Estás seguro de que deseas eliminar el producto: ' + (productoAEliminar?.nombre || '') + '?'"
+        (confirm)="confirmarEliminacion()"
+        (cancel)="cancelarEliminacion()">
+      </app-delete-confirmation>
+
+      <!-- Modal: Ver Detalles del Producto -->
+      <app-producto-view-details
+        [isVisible]="mostrarDetalles"
+        [producto]="productoVisualizando"
+        (close)="cerrarDetalles()">
+      </app-producto-view-details>
     </div>
   `,
   styles: [`
@@ -692,6 +719,14 @@ interface Producto {
 export class ProductosComponent implements OnInit {
   Math = Math;
   
+  // Estado de modales
+  mostrarFormulario = false;
+  mostrarConfirmacion = false;
+  mostrarDetalles = false;
+  productoEdicion: any = null;
+  productoAEliminar: Producto | null = null;
+  productoVisualizando: Producto | null = null;
+  
   productos: Producto[] = [
     {
       id: 1,
@@ -817,19 +852,114 @@ export class ProductosComponent implements OnInit {
   }
 
   abrirModalNuevo(): void {
-    console.log('Abrir modal para nuevo producto');
+    this.productoEdicion = null; // null = nuevo producto
+    this.mostrarFormulario = true;
+  }
+
+  cerrarFormulario(): void {
+    this.mostrarFormulario = false;
+    this.productoEdicion = null;
+  }
+
+  guardarProducto(productoFormulario: any): void {
+    // Convertir datos del formulario al formato de la tabla
+    if (this.productoEdicion) {
+      // Editar producto existente
+      const index = this.productos.findIndex(p => p.id === this.productoEdicion!.id);
+      if (index !== -1) {
+        const ganancia = productoFormulario.precio_venta - productoFormulario.precio_costo;
+        const gananciaPercent = (ganancia / productoFormulario.precio_costo) * 100;
+        
+        this.productos[index] = {
+          id: this.productoEdicion.id,
+          codigo: productoFormulario.codigo_producto,
+          nombre: productoFormulario.nombre,
+          descripcion: productoFormulario.descripcion || '',
+          costoBs: productoFormulario.precio_costo,
+          precioBs: productoFormulario.precio_venta,
+          ganancia: ganancia,
+          gananciaPercent: gananciaPercent,
+          stock: productoFormulario.stock_actual,
+          estado: productoFormulario.estado === 'activo'
+        };
+        
+        this.filtrar();
+        console.log('Producto actualizado:', this.productos[index]);
+      }
+    } else {
+      // Crear nuevo producto
+      const nuevoId = Math.max(...this.productos.map(p => p.id), 0) + 1;
+      const ganancia = productoFormulario.precio_venta - productoFormulario.precio_costo;
+      const gananciaPercent = (ganancia / productoFormulario.precio_costo) * 100;
+      
+      const nuevoProducto: Producto = {
+        id: nuevoId,
+        codigo: productoFormulario.codigo_producto,
+        nombre: productoFormulario.nombre,
+        descripcion: productoFormulario.descripcion || '',
+        costoBs: productoFormulario.precio_costo,
+        precioBs: productoFormulario.precio_venta,
+        ganancia: ganancia,
+        gananciaPercent: gananciaPercent,
+        stock: productoFormulario.stock_actual,
+        estado: productoFormulario.estado === 'activo'
+      };
+      
+      this.productos.push(nuevoProducto);
+      this.filtrar();
+      console.log('Nuevo producto agregado:', nuevoProducto);
+    }
+    
+    this.cerrarFormulario();
   }
 
   editar(producto: Producto): void {
-    console.log('Editar:', producto);
+    // Convertir Producto local a objeto compatible con ProductoFormComponent
+    const productoConvertido = {
+      id: producto.id.toString(),
+      codigo_producto: producto.codigo,
+      nombre: producto.nombre,
+      descripcion: producto.descripcion,
+      precio_costo: producto.costoBs,
+      precio_venta: producto.precioBs,
+      stock_actual: producto.stock,
+      estado: producto.estado ? 'activo' : 'inactivo',
+      categoria_id: undefined
+    };
+    this.productoEdicion = productoConvertido as any;
+    this.mostrarFormulario = true;
   }
 
   eliminar(producto: Producto): void {
-    console.log('Eliminar:', producto);
+    this.productoAEliminar = producto;
+    this.mostrarConfirmacion = true;
+  }
+
+  confirmarEliminacion(): void {
+    if (this.productoAEliminar) {
+      const index = this.productos.findIndex(p => p.id === this.productoAEliminar!.id);
+      if (index !== -1) {
+        this.productos.splice(index, 1);
+        this.filtrar();
+        console.log('Producto eliminado:', this.productoAEliminar);
+      }
+    }
+    this.cancelarEliminacion();
+  }
+
+  cancelarEliminacion(): void {
+    this.mostrarConfirmacion = false;
+    this.productoAEliminar = null;
   }
 
   ver(producto: Producto): void {
-    console.log('Ver detalles:', producto);
+    this.productoVisualizando = producto;
+    this.mostrarDetalles = true;
+  }
+
+  cerrarDetalles(): void {
+    this.mostrarDetalles = false;
+    this.productoVisualizando = null;
   }
 
   getPages(): number[] {
