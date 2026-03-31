@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
+import { SidebarService } from '../../core/services/sidebar.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -94,27 +95,36 @@ interface NavItem {
     </aside>
   `,
   styles: [`
+    :host {
+      --sidebar-width-expanded: 260px;
+      --sidebar-width-collapsed: 80px;
+      --transition-duration: 0.35s;
+      --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========== SIDEBAR MAIN ========== */
     .sidebar {
       position: fixed;
       left: 0;
       top: 0;
       height: 100vh;
-      width: 240px;
+      width: var(--sidebar-width-expanded);
       background-color: var(--color-sidebar-bg);
       border-right: 1px solid var(--color-border);
       display: flex;
       flex-direction: column;
-      transition: width var(--transition-base), background-color var(--transition-base);
+      transition: width var(--transition-duration) var(--transition-timing);
       z-index: 1000;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow: hidden;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
     }
 
+    /* Collapsed State */
     .sidebar.collapsed {
-      width: 64px;
+      width: var(--sidebar-width-collapsed);
     }
 
-    /* Header Section */
+    /* ========== HEADER SECTION ========== */
     .sidebar-header {
       padding: var(--spacing-lg);
       border-bottom: 1px solid var(--color-border);
@@ -122,6 +132,9 @@ interface NavItem {
       align-items: center;
       justify-content: space-between;
       gap: var(--spacing-md);
+      position: relative;
+      min-height: 80px;
+      flex-shrink: 0;
     }
 
     .logo-container {
@@ -129,19 +142,20 @@ interface NavItem {
       align-items: center;
       gap: var(--spacing-md);
       flex: 1;
-      transition: all var(--transition-base);
+      min-width: 0;
+      transition: all var(--transition-duration) var(--transition-timing);
     }
 
-    .logo-container.collapsed {
+    .sidebar.collapsed .logo-container {
       justify-content: center;
+      flex: unset;
     }
 
     .logo-icon {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       color: var(--color-accent-primary);
       flex-shrink: 0;
-      font-size: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -149,84 +163,122 @@ interface NavItem {
 
     .logo-text {
       flex: 1;
+      overflow: hidden;
+      min-width: 0;
     }
 
     .logo-text h1 {
       font: var(--font-display-sm);
       color: var(--color-text-primary);
       margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .logo-text p {
       font: var(--font-body-xs);
-      color: var(--color-text-primary);
+      color: var(--color-text-secondary);
       margin: 0;
       opacity: 0.7;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .collapse-btn {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--color-text-primary);
-      background: transparent;
+      background: var(--color-bg-tertiary);
       cursor: pointer;
-      transition: all var(--transition-base);
-      border: none;
+      transition: all var(--transition-duration) var(--transition-timing);
+      border: 1px solid var(--color-border);
       padding: 0;
-      font-size: 20px;
+      font-size: 18px;
+      flex-shrink: 0;
     }
 
     .collapse-btn:hover {
-      background-color: var(--color-bg-tertiary);
-      color: var(--color-accent-primary);
+      background-color: var(--color-accent-primary);
+      color: white;
+      border-color: var(--color-accent-primary);
+      transform: scale(1.05);
     }
 
-    /* Navigation */
+    .collapse-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ========== NAVIGATION SECTION ========== */
     .sidebar-nav {
       flex: 1;
-      padding: var(--spacing-lg) 0;
+      display: flex;
+      flex-direction: column;
       overflow-y: auto;
+      overflow-x: hidden;
+      padding: var(--spacing-md) 0;
     }
 
     .nav-section {
-      padding: 0 var(--spacing-md) var(--spacing-lg);
+      padding: 0 var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
     }
 
     .nav-label {
       font: var(--font-body-xs);
-      color: var(--color-text-primary);
+      color: var(--color-text-secondary);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       padding: var(--spacing-sm) var(--spacing-md);
-      margin-bottom: var(--spacing-md);
-      opacity: 0.7;
+      margin: var(--spacing-md) 0 var(--spacing-sm) 0;
+      opacity: 0.6;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: all var(--transition-duration) var(--transition-timing);
+    }
+
+    .sidebar.collapsed .nav-label {
+      width: 0;
+      overflow: hidden;
+      padding: 0;
+      margin: 0;
     }
 
     .nav-items {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-sm);
+      gap: var(--spacing-xs, 4px);
     }
 
     .nav-item {
       display: flex;
       align-items: center;
       gap: var(--spacing-md);
-      padding: var(--spacing-md) var(--spacing-md);
+      padding: var(--spacing-md);
       border-radius: var(--radius-md);
       color: var(--color-text-primary);
       text-decoration: none;
       font-weight: 500;
       font-size: 0.95rem;
       position: relative;
-      transition: all var(--transition-base);
+      transition: all var(--transition-duration) var(--transition-timing);
       border-left: 3px solid transparent;
       cursor: pointer;
-      white-space: nowrap;
+      user-select: none;
+    }
+
+    .sidebar.collapsed .nav-item {
+      justify-content: center;
+      padding: var(--spacing-md);
+      gap: 0;
     }
 
     .nav-item:hover {
@@ -240,62 +292,117 @@ interface NavItem {
       color: var(--color-accent-primary);
     }
 
+    .sidebar.collapsed .nav-item.active {
+      border-left-color: transparent;
+      background-color: rgba(245, 158, 11, 0.2);
+    }
+
     .nav-item span:first-child {
       font-size: 20px;
       display: flex;
       align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
     .nav-label-text {
       flex: 1;
-      color: var(--color-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: opacity var(--transition-duration) var(--transition-timing);
+    }
+
+    .sidebar.collapsed .nav-label-text {
+      display: none;
     }
 
     .badge {
       background-color: var(--color-danger);
       color: white;
       border-radius: var(--radius-full);
-      padding: 2px 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      padding: 3px 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: opacity var(--transition-duration) var(--transition-timing);
     }
 
-    /* Footer Section */
+    .sidebar.collapsed .badge {
+      display: none;
+    }
+
+    /* ========== FOOTER SECTION ========== */
     .sidebar-footer {
-      padding: var(--spacing-lg);
+      padding: var(--spacing-md);
       border-top: 1px solid var(--color-border);
       display: flex;
       flex-direction: column;
       gap: var(--spacing-md);
+      flex-shrink: 0;
+      transition: all var(--transition-duration) var(--transition-timing);
     }
 
+    .sidebar.collapsed .sidebar-footer {
+      align-items: center;
+    }
+
+    /* Theme Toggle Button */
     .theme-toggle {
       width: 100%;
       display: flex;
       align-items: center;
-      gap: var(--spacing-md);
       justify-content: center;
+      gap: var(--spacing-md);
       padding: var(--spacing-md);
       border-radius: var(--radius-md);
       background-color: var(--color-accent-primary);
-      color: var(--color-text-primary);
+      color: white;
       font-weight: 600;
-      transition: all var(--transition-base);
+      font-size: 0.9rem;
+      transition: all var(--transition-duration) var(--transition-timing);
       border: none;
       cursor: pointer;
+      user-select: none;
+    }
+
+    .sidebar.collapsed .theme-toggle {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      justify-content: center;
     }
 
     .theme-toggle:hover {
       opacity: 0.9;
-      transform: scale(1.02);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+
+    .theme-toggle:active {
+      transform: translateY(0px);
     }
 
     .theme-toggle span:first-child {
-      font-size: 20px;
+      font-size: 18px;
       display: flex;
       align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
+    .theme-toggle span:last-child {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar.collapsed .theme-toggle span:last-child {
+      display: none;
+    }
+
+    /* User Section */
     .user-section {
       display: flex;
       align-items: center;
@@ -304,190 +411,163 @@ interface NavItem {
       border-radius: var(--radius-md);
       background-color: var(--color-bg-tertiary);
       border: 1px solid var(--color-border);
-      transition: all var(--transition-base);
+      transition: all var(--transition-duration) var(--transition-timing);
+    }
+
+    .sidebar.collapsed .user-section {
+      display: none;
     }
 
     .user-avatar {
       width: 40px;
       height: 40px;
-      border-radius: var(--radius-full);
+      border-radius: 50%;
       background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 600;
-      font-size: 1rem;
+      font-weight: 700;
+      font-size: 0.95rem;
       flex-shrink: 0;
     }
 
     .user-info {
       flex: 1;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .user-name {
-      font: 600 0.95rem / 1.2 var(--font-family-body);
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1.2;
       color: var(--color-text-primary);
       margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .user-email {
       font: var(--font-body-xs);
-      color: var(--color-text-tertiary);
-      margin: 0;
+      color: var(--color-text-secondary);
+      margin: 4px 0 0 0;
+      opacity: 0.75;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
+    /* Logout Button */
     .logout-btn {
       width: 100%;
       display: flex;
       align-items: center;
-      gap: var(--spacing-md);
       justify-content: center;
+      gap: var(--spacing-md);
       padding: var(--spacing-md);
       border-radius: var(--radius-md);
-      background-color: var(--color-danger);
+      background-color: #EF4444;
       color: white;
       font-weight: 600;
-      transition: all var(--transition-base);
+      font-size: 0.9rem;
+      transition: all var(--transition-duration) var(--transition-timing);
       border: none;
       cursor: pointer;
+      user-select: none;
     }
 
-    .logout-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .logout-btn span:first-child {
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-    }
-
-    /* Collapsed State Footer */
-    .sidebar.collapsed .sidebar-footer {
-      align-items: center;
-      padding: var(--spacing-md);
-    }
-
-    .sidebar.collapsed .theme-toggle,
     .sidebar.collapsed .logout-btn {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       padding: 0;
-      display: flex;
-      align-items: center;
       justify-content: center;
-    }
-
-    .sidebar.collapsed .theme-toggle span:last-child,
-    .sidebar.collapsed .logout-btn span:last-child {
-      display: none;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 64px;
-      }
-
-      .sidebar.collapsed {
-        width: 64px;
-      }
-
-      .logo-text,
-      .nav-label-text,
-      .badge,
-      .user-section,
-      .logout-btn span:last-child,
-      .theme-toggle span:last-child {
-        display: none;
-      }
-
-      .sidebar-header {
-        padding: var(--spacing-md);
-      }
-
-      .nav-item {
-        justify-content: center;
-        padding: var(--spacing-md);
-      }
-    }
-
-    /* Utility Classes */
-    .text-xs {
-      font: var(--font-body-xs);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation: none !important;
-        transition: none !important;
-      }
     }
 
     .logout-btn:hover {
       background-color: #DC2626;
-      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
 
-    /* Collapsed State Footer */
-    .sidebar.collapsed .sidebar-footer {
-      align-items: center;
-      padding: var(--spacing-md);
+    .logout-btn:active {
+      transform: translateY(0px);
     }
 
-    .sidebar.collapsed .theme-toggle,
-    .sidebar.collapsed .logout-btn {
-      width: 40px;
-      height: 40px;
-      padding: 0;
+    .logout-btn span:first-child {
+      font-size: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
-    .sidebar.collapsed .theme-toggle span,
-    .sidebar.collapsed .logout-btn span {
+    .logout-btn span:last-child {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar.collapsed .logout-btn span:last-child {
       display: none;
     }
 
-    /* Responsive */
+    /* ========== UTILITY CLASSES ========== */
+    .text-xs {
+      font: var(--font-body-xs);
+    }
+
+    /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
+      :host {
+        --sidebar-width-expanded: 240px;
+        --sidebar-width-collapsed: 70px;
+      }
+
       .sidebar {
-        width: 64px;
+        width: var(--sidebar-width-collapsed);
       }
 
       .sidebar.collapsed {
-        width: 64px;
+        width: var(--sidebar-width-collapsed);
       }
 
       .logo-text,
+      .nav-label,
       .nav-label-text,
       .badge,
       .user-section,
-      .logout-btn span {
+      .theme-toggle span:last-child,
+      .logout-btn span:last-child {
         display: none;
       }
 
       .sidebar-header {
         padding: var(--spacing-md);
+        min-height: 70px;
       }
 
-      .nav-item {
+      .nav-item,
+      .collapse-btn {
         justify-content: center;
-        padding: var(--spacing-md);
       }
     }
 
-    /* Utility Classes */
-    .text-xs {
-      font: 400 0.75rem / 1.5 var(--font-family-body);
-    }
-
+    /* ========== MOTION PREFERENCES ========== */
     @media (prefers-reduced-motion: reduce) {
-      * {
-        animation: none !important;
+      .sidebar,
+      .logo-container,
+      .nav-label,
+      .nav-item,
+      .nav-label-text,
+      .badge,
+      .sidebar-footer,
+      .theme-toggle,
+      .logout-btn,
+      .collapse-btn {
+        transition: none !important;
       }
     }
   `]
@@ -506,7 +586,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(private themeService: ThemeService) {}
+  constructor(
+    private themeService: ThemeService,
+    private sidebarService: SidebarService
+  ) {}
 
   ngOnInit(): void {
     this.themeService.theme$
@@ -514,10 +597,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
       .subscribe(theme => {
         this.isDarkMode = theme === 'dark';
       });
+
+    this.sidebarService.collapsed$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(collapsed => {
+        this.isCollapsed = collapsed;
+      });
   }
 
   toggleCollapse(): void {
-    this.isCollapsed = !this.isCollapsed;
+    this.sidebarService.toggleCollapsed();
   }
 
   toggleTheme(): void {
