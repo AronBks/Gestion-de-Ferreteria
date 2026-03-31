@@ -7,34 +7,60 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="placeholder-container">
-      <div class="placeholder-card">
-        <h2>🚀 Sección en Desarrollo</h2>
-        <p>Este módulo estará disponible pronto.</p>
+      <div class="placeholder-content">
+        <div style="font-size: 64px; margin-bottom: 24px;">🚧</div>
+        <h2>Sección en construcción</h2>
+        <p>Esta sección está siendo desarrollada</p>
+        <p class="text-secondary">Vuelve pronto para nuevas funcionalidades</p>
       </div>
     </div>
   `,
   styles: [`
     .placeholder-container {
-      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    .placeholder-content {
       text-align: center;
     }
-    
-    .placeholder-card {
-      background: white;
-      padding: 3rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    .placeholder-icon {
+      color: var(--color-accent-primary);
+      margin-bottom: var(--spacing-lg);
+      opacity: 0.5;
     }
-    
+
     h2 {
-      color: #2c3e50;
-      margin-bottom: 1rem;
+      font: var(--font-display-md);
+      color: var(--color-text-primary);
+      margin-bottom: var(--spacing-md);
     }
-    
+
     p {
-      color: #7f8c8d;
-      font-size: 1.1rem;
+      font: 400 1rem / 1.5 var(--font-family-body);
+      color: var(--color-text-secondary);
+      margin: var(--spacing-sm) 0;
+    }
+
+    .text-secondary {
+      color: var(--color-text-tertiary);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   `]
 })
-export class PlaceholderComponent { }
+export class PlaceholderComponent {
+}
