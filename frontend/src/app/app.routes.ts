@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ProductosComponent } from './components/productos/productos.component';
 import { PlaceholderComponent } from './components/placeholder/placeholder.component';
 import { AuthGuard } from './guards/auth.guard';
@@ -12,9 +13,13 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    component: DashboardComponent,
+    component: MainLayoutComponent,
     canActivate: [AuthGuard],
     children: [
+      {
+        path: '',
+        component: DashboardComponent
+      },
       {
         path: 'productos',
         component: ProductosComponent
@@ -30,22 +35,17 @@ export const routes: Routes = [
       {
         path: 'reportes',
         component: PlaceholderComponent
-      },
-      {
-        path: '',
-        redirectTo: 'productos',
-        pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: '/login',
+    redirectTo: '/dashboard',
     pathMatch: 'full'
   },
   {
     path: '**',
-    redirectTo: '/login'
+    redirectTo: '/dashboard'
   }
 ];
 
