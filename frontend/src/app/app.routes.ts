@@ -26,11 +26,11 @@ export const routes: Routes = [
       },
       {
         path: 'ventas',
-        component: PlaceholderComponent
+        loadChildren: () => import('./features/ventas/ventas.routes').then(m => m.VENTAS_ROUTES)
       },
       {
         path: 'usuarios',
-        component: PlaceholderComponent
+        loadChildren: () => import('./features/usuarios/usuarios.routes').then(m => m.USUARIOS_ROUTES)
       },
       {
         path: 'reportes',

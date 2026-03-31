@@ -7,6 +7,7 @@ import { typeOrmAsyncConfig } from './database';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProductosModule } from './modules/productos/productos.module';
+import { VentasModule } from './modules/ventas/ventas.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ProductosModule } from './modules/productos/productos.module';
     UsuariosModule,
     AuthModule,
     ProductosModule,
+    VentasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
