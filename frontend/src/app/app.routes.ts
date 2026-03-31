@@ -34,8 +34,9 @@ export const routes: Routes = [
       },
       {
         path: 'reportes',
-        component: PlaceholderComponent
-      }
+        loadChildren: () => import('./features/reportes/reportes.routes').then(m => m.REPORTES_ROUTES),
+        canActivate: [AuthGuard]
+      },
     ]
   },
   {

@@ -8,6 +8,7 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProductosModule } from './modules/productos/productos.module';
 import { VentasModule } from './modules/ventas/ventas.module';
+import { ReportesModule } from './modules/reportes/reportes.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { VentasModule } from './modules/ventas/ventas.module';
     AuthModule,
     ProductosModule,
     VentasModule,
+    ReportesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
