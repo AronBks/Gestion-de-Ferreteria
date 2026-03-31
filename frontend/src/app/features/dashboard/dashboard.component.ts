@@ -392,6 +392,7 @@ import { KPICardComponent } from '../../shared/components/kpi-card/kpi-card.comp
       color: var(--color-danger);
     }
 
+    /* ========== CRITICAL STOCK SECTION ========== */
     .critical-stock {
       background-color: var(--color-card-bg);
       border: 1px solid var(--color-border);
@@ -399,97 +400,272 @@ import { KPICardComponent } from '../../shared/components/kpi-card/kpi-card.comp
       padding: var(--spacing-lg);
       animation: fadeInUp 0.3s ease-out 0.3s both;
       transition: all var(--transition-base);
-    }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--spacing-lg);
-    }
+      /* Card Header */
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
 
-    .card-header h3 {
-      font: var(--font-display-sm);
-      color: var(--color-text-primary);
-      margin: 0;
+        h3 {
+          font: var(--font-display-sm);
+          color: var(--color-text-primary);
+          margin: 0;
+          flex: 1;
+          min-width: 250px;
+        }
+      }
+
+      /* Stock Items Grid Container */
+      .stock-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+        width: 100%;
+
+        /* Individual Stock Item Card */
+        .stock-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: var(--spacing-md);
+          padding: var(--spacing-md) var(--spacing-lg);
+          background-color: var(--color-bg-tertiary);
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-md);
+          transition: all var(--transition-base);
+          min-height: 80px;
+          flex-wrap: nowrap;
+
+          /* Hover State */
+          &:hover {
+            border-color: var(--color-accent-primary);
+            background-color: var(--color-bg-secondary, var(--color-bg-tertiary));
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+            transform: translateY(-2px);
+          }
+
+          /* Alert Icon */
+          > span:first-child {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            min-width: 32px;
+            line-height: 1;
+          }
+
+          /* Stock Info Section */
+          .stock-info {
+            flex: 1;
+            min-width: 0; /* Critical for text truncation */
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs, 4px);
+
+            .stock-name {
+              font: 600 0.95rem / 1.2 var(--font-family-body);
+              color: var(--color-text-primary);
+              margin: 0;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            .stock-code {
+              font: 400 0.78rem / 1.4 var(--font-family-mono);
+              color: var(--color-text-secondary);
+              margin: 0;
+              opacity: 0.75;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+
+          /* Quantity Badge */
+          .quantity-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background-color: rgba(239, 68, 68, 0.12);
+            color: var(--color-danger);
+            border-radius: var(--radius-full);
+            font: 600 0.8rem / 1 var(--font-family-body);
+            white-space: nowrap;
+            flex-shrink: 0;
+          }
+
+          /* Reorder Button */
+          .btn-reorder {
+            padding: 8px 14px;
+            background-color: transparent;
+            color: var(--color-accent-secondary);
+            border: 1.5px solid var(--color-accent-secondary);
+            border-radius: var(--radius-md);
+            font: 600 0.85rem / 1 var(--font-family-body);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            white-space: nowrap;
+            flex-shrink: 0;
+            user-select: none;
+
+            &:hover {
+              background-color: var(--color-accent-secondary);
+              color: white;
+              transform: translateY(-1px);
+              box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+            }
+
+            &:active {
+              transform: translateY(0px);
+            }
+          }
+        }
+      }
     }
 
     .btn-action {
-      padding: 8px 16px;
+      padding: 10px 18px;
       background-color: var(--color-accent-primary);
-      color: var(--color-text-primary);
+      color: white;
       border: none;
       border-radius: var(--radius-md);
       font: 600 0.9rem / 1 var(--font-family-body);
       cursor: pointer;
       transition: all var(--transition-base);
+      white-space: nowrap;
+      user-select: none;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+      }
+
+      &:active {
+        transform: translateY(0px);
+      }
     }
 
-    .btn-action:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
+    /* ========== RESPONSIVE DESIGN ========== */
+    @media (max-width: 1200px) {
+      .critical-stock {
+        .stock-items {
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+      }
     }
 
-    .stock-items {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: var(--spacing-lg);
+    @media (max-width: 992px) {
+      .critical-stock {
+        .stock-items {
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 1.25rem;
+        }
+
+        .card-header {
+          flex-direction: column;
+          align-items: flex-start;
+
+          h3 {
+            min-width: unset;
+          }
+        }
+      }
     }
 
-    .stock-item {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-md);
-      padding: var(--spacing-md);
-      background-color: var(--color-bg-tertiary);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--color-border);
-      transition: all var(--transition-base);
+    @media (max-width: 768px) {
+      .critical-stock {
+        padding: var(--spacing-md);
+
+        .card-header {
+          flex-direction: column;
+          align-items: stretch;
+          justify-content: flex-start;
+          margin-bottom: var(--spacing-md);
+
+          h3 {
+            flex: unset;
+            min-width: unset;
+            margin-bottom: var(--spacing-sm);
+          }
+        }
+
+        .stock-items {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+
+          .stock-item {
+            min-height: auto;
+            padding: var(--spacing-md);
+            gap: var(--spacing-sm);
+
+            > span:first-child {
+              font-size: 24px;
+              min-width: 28px;
+            }
+
+            .quantity-badge {
+              padding: 4px 10px;
+              font-size: 0.75rem;
+            }
+
+            .btn-reorder {
+              padding: 6px 12px;
+              font-size: 0.8rem;
+            }
+          }
+        }
+      }
+
+      .btn-action {
+        width: 100%;
+        padding: 10px 16px;
+      }
     }
 
-    .stock-item:hover {
-      border-color: var(--color-accent-primary);
-    }
+    @media (max-width: 480px) {
+      .critical-stock {
+        padding: var(--spacing-md);
 
-    .stock-info {
-      flex: 1;
-    }
+        .stock-items {
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
 
-    .stock-name {
-      font: 600 0.95rem / 1.2 var(--font-family-body);
-      color: var(--color-text-primary);
-      margin: 0;
-    }
+          .stock-item {
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            min-height: auto;
+            padding: var(--spacing-md);
 
-    .stock-code {
-      font: 400 0.8rem / 1.4 var(--font-family-mono);
-      color: var(--color-text-tertiary);
-      margin: 0;
-    }
+            > span:first-child {
+              align-self: flex-start;
+              margin-bottom: var(--spacing-xs);
+            }
 
-    .quantity-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      background-color: rgba(239, 68, 68, 0.1);
-      color: var(--color-danger);
-      border-radius: var(--radius-full);
-      font: 600 0.8rem / 1 var(--font-family-body);
-    }
+            .stock-info {
+              width: 100%;
+              margin-bottom: var(--spacing-xs);
+            }
 
-    .btn-reorder {
-      padding: 6px 12px;
-      background-color: transparent;
-      color: var(--color-accent-secondary);
-      border: 1px solid var(--color-accent-secondary);
-      border-radius: var(--radius-md);
-      font: 600 0.85rem / 1 var(--font-family-body);
-      cursor: pointer;
-      transition: all var(--transition-base);
-    }
+            .quantity-badge,
+            .btn-reorder {
+              width: 100%;
+              justify-content: center;
+              text-align: center;
+            }
+          }
+        }
+      }
 
-    .btn-reorder:hover {
-      background-color: var(--color-accent-secondary);
-      color: white;
+      .btn-action {
+        width: 100%;
+      }
     }
 
     @keyframes fadeInUp {
@@ -515,10 +691,6 @@ import { KPICardComponent } from '../../shared/components/kpi-card/kpi-card.comp
       .charts-row {
         grid-template-columns: 1fr;
       }
-
-      .stock-items {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      }
     }
 
     @media (max-width: 768px) {
@@ -542,31 +714,17 @@ import { KPICardComponent } from '../../shared/components/kpi-card/kpi-card.comp
       .chart-bar-container {
         height: 200px;
       }
-    }
-
-    @media (max-width: 480px) {
-      .kpi-grid {
-        grid-template-columns: 1fr;
-      }
 
       .table-header {
         flex-direction: column;
         align-items: flex-start;
         gap: var(--spacing-md);
       }
+    }
 
-      .stock-items {
+    @media (max-width: 480px) {
+      .kpi-grid {
         grid-template-columns: 1fr;
-      }
-
-      .card-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--spacing-md);
-      }
-
-      .btn-action {
-        width: 100%;
       }
     }
   `]
