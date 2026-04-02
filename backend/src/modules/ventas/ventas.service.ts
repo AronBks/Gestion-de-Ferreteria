@@ -169,11 +169,18 @@ export class VentasService {
     const total = ventasHoy.reduce((acc, v) => acc + Number(v.total), 0);
     const transacciones = ventasHoy.length;
 
+    // Calcular método de pago más usado
+    const metodosConteo: { [key: string]: number } = {};
+    ventasHoy.forEach(v => {
+      metodosConteo[v.metodoPago] = (metodosConteo[v.metodoPago] || 0) + 1;
+    });
+    const metodoMasUsado = Object.entries(metodosConteo).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+
     return {
-      total,
+      total: parseFloat(total.toFixed(2)),
       transacciones,
-      metodoMasUsado: 'EFECTIVO', // Faltaria agrupamiento real aca
-      ticketPromedio: transacciones > 0 ? (total/transacciones).toFixed(2) : 0
+      metodoMasUsado,
+      ticketPromedio: transacciones > 0 ? parseFloat((total/transacciones).toFixed(2)) : 0
     };
   }
 }
