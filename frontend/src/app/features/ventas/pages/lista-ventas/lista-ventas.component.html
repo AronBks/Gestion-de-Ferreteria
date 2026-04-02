@@ -1,0 +1,241 @@
+<div class="ventas-container">
+  <!-- CABECERA -->
+  <header class="ventas-header">
+    <div class="header-content">
+      <h1 class="header-title">Gestión de Ventas</h1>
+      <p class="header-subtitle">Administra y controla tus ventas en tiempo real</p>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="ventas-main">
+
+    <!-- SECCIÓN DE KPIs -->
+    <section class="kpi-section">
+      <div class="kpi-grid">
+        <!-- KPI 1: Ventas Hoy -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <div class="kpi-icon-box">
+              <span class="kpi-icon">💰</span>
+            </div>
+            <h3 class="kpi-title">VENTAS HOY</h3>
+          </div>
+          <div class="kpi-value">
+            {{ (ventasHoy().total || 0) | number:'1.2-2' }}
+          </div>
+          <p class="kpi-currency">Bs.</p>
+          <div class="kpi-footer">
+            <small>Generadas en el día</small>
+          </div>
+        </div>
+
+        <!-- KPI 2: Transacciones -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <div class="kpi-icon-box">
+              <span class="kpi-icon">📋</span>
+            </div>
+            <h3 class="kpi-title">TRANSACCIONES</h3>
+          </div>
+          <div class="kpi-value">
+            {{ ventasHoy().transacciones || 0 }}
+          </div>
+          <p class="kpi-currency">Operaciones</p>
+          <div class="kpi-footer">
+            <small>Número de ventas realizadas</small>
+          </div>
+        </div>
+
+        <!-- KPI 3: Método Más Usado -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <div class="kpi-icon-box">
+              <span class="kpi-icon">💳</span>
+            </div>
+            <h3 class="kpi-title">MÉTODO MÁS USADO</h3>
+          </div>
+          <div class="kpi-value">
+            {{ ventasHoy().metodoMasUsado || '-' }}
+          </div>
+          <div class="kpi-footer">
+            <small>Medio de pago preferido</small>
+          </div>
+        </div>
+
+        <!-- KPI 4: Ticket Promedio -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <div class="kpi-icon-box">
+              <span class="kpi-icon">📊</span>
+            </div>
+            <h3 class="kpi-title">TICKET PROMEDIO</h3>
+          </div>
+          <div class="kpi-value">
+            {{ (ventasHoy().ticketPromedio || 0) | number:'1.2-2' }}
+          </div>
+          <p class="kpi-currency">Bs.</p>
+          <div class="kpi-footer">
+            <small>Promedio por venta</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DE ACCIÓN -->
+    <section class="action-section">
+      <div class="action-card">
+        <div class="action-header">
+          <h2 class="action-title">Registrar Nueva Venta</h2>
+          <button class="btn-primary" (click)="irANuevaVenta()">
+            <span class="btn-icon">Agregar</span> Nueva Venta
+          </button>
+        </div>
+
+        <!-- Formulario de Filtros -->
+        <div class="filter-form">
+          <div class="form-group">
+            <label for="filter-estado">Estado</label>
+            <select 
+              id="filter-estado"
+              [(ngModel)]="filtros().estado" 
+              (change)="cargarVentas()"
+              class="form-input">
+              <option value="">Todos los Estados</option>
+              <option value="COMPLETADA">Completada</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="CANCELADA">Cancelada</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filter-metodo">Método de Pago</label>
+            <select 
+              id="filter-metodo"
+              [(ngModel)]="filtros().metodoPago" 
+              (change)="cargarVentas()"
+              class="form-input">
+              <option value="">Todos los Métodos</option>
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="TARJETA_DEBITO">T. Debito</option>
+              <option value="TARJETA_CREDITO">T. Credito</option>
+              <option value="TRANSFERENCIA">Transferencia</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DE TABLA O EMPTY STATE -->
+    <section class="data-section">
+      
+      <!-- Loading State -->
+      <div *ngIf="loading()" class="empty-state">
+        <div class="empty-spinner">Cargando...</div>
+        <h3>Cargando ventas</h3>
+        <p>Por favor espera mientras se cargan los datos</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading() && ventas().length === 0" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>No hay ventas registradas</h3>
+        <p>Comienza registrando una nueva venta para ver el historial aqui</p>
+        <button class="btn-secondary" (click)="irANuevaVenta()">
+          Crear Primera Venta
+        </button>
+      </div>
+
+      <!-- Data Table -->
+      <div *ngIf="ventas().length > 0 && !loading()" class="table-card">
+        <div class="table-header">
+          <h3>Historial de Ventas</h3>
+          <span class="table-count">{{ ventas().length }} registros</span>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>No Venta</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Vendedor</th>
+                <th>Método Pago</th>
+                <th class="text-right">Total</th>
+                <th class="text-center">Estado</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let venta of ventas(); trackBy: trackByVentaId" class="table-row">
+                <td class="col-venta-numero">
+                  <span class="venta-badge">#{{ venta.numeroVenta }}</span>
+                </td>
+                <td>{{ venta.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ venta.clienteNombre || 'Cliente General' }}</td>
+                <td>
+                  <div class="vendor-badge">
+                    {{ venta.vendedor?.nombre || 'N/A' }}
+                  </div>
+                </td>
+                <td>
+                  <span class="method-badge">{{ venta.metodoPago }}</span>
+                </td>
+                <td class="col-total">
+                  <strong>Bs. {{ venta.total | number:'1.2-2' }}</strong>
+                </td>
+                <td class="col-estado">
+                  <span 
+                    class="status-badge"
+                    [ngClass]="{
+                      'status-success': venta.estado === 'COMPLETADA',
+                      'status-warning': venta.estado === 'PENDIENTE',
+                      'status-danger': venta.estado === 'CANCELADA'
+                    }">
+                    {{ venta.estado }}
+                  </span>
+                </td>
+                <td class="col-actions">
+                  <button class="btn-action btn-view" (click)="verDetalle(venta.id)" title="Ver Detalle">
+                    Ver
+                  </button>
+                  <button *ngIf="venta.estado !== 'CANCELADA'" class="btn-action btn-delete" (click)="confirmarCancelacion(venta)" title="Cancelar Venta">
+                    X
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL DE CONFIRMACIÓN -->
+  <div *ngIf="cancelModalOpen()" class="modal-backdrop" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Cancelar Venta</h2>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-message">
+          Estás seguro de cancelar la venta <strong>#{{ ventaSeleccionada()?.numeroVenta }}</strong>?
+        </p>
+        <p class="modal-warning">
+          El stock será devuelto automáticamente al inventario.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button class="btn-danger" (click)="ejecutarCancelacion()">
+          Si, Cancelar Venta
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
