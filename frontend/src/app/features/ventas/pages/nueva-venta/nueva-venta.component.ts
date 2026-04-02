@@ -144,9 +144,12 @@ interface CartItem {
             </div>
             <div class="flex justify-between text-red-500">
               <span>Descuento Total</span>
-              <input type="number" [(ngModel)]="descuentoGlobal" class="w-20 text-right text-xs py-0.5 px-1 border-gray-300 dark:bg-gray-700 rounded text-red-500 -mt-1 focus:ring-amber-500 hidden hidden-input">
               <span class="border-b border-dashed border-red-300 cursor-text" (click)="editarDescGlobal = !editarDescGlobal">
-                - Bs. {{ descuentoGlobal() | number:'1.2-2' }}
+                @if (editarDescGlobal) {
+                  <input type="number" [(ngModel)]="descuentoGlobal" class="w-20 text-right text-xs py-0.5 px-1 border border-red-400 rounded text-red-500 focus:ring-amber-500" placeholder="0.00" (blur)="editarDescGlobal = false">
+                } @else {
+                  - Bs. {{ descuentoGlobal() | number:'1.2-2' }}
+                }
               </span>
             </div>
             <!-- Toggle input desc -->
@@ -247,7 +250,7 @@ export class NuevaVentaComponent {
   buscando = signal<boolean>(false);
   processing = signal<boolean>(false);
 
-  // Inputs bÃ¡sicos
+  // Inputs básicos
   clienteNombre = '';
   clienteDocumento = '';
   numeroReferencia = '';
@@ -299,18 +302,27 @@ export class NuevaVentaComponent {
       return;
     }
     this.buscando.set(true);
-    // Temporalmente mapeamos obtenerProductos, lo ideal seria tener un endpoint de busqueda real
-    this.productosService.obtenerProductos(1, 20).subscribe({
+    // Buscar en todos los productos con paginación
+    this.productosService.obtenerProductos(1, 100).subscribe({
       next: (res: any) => {
+        const searchLower = term.toLowerCase();
         const filtered = (res.data || res).filter((p: any) => 
-          p.nombre.toLowerCase().includes(term.toLowerCase()) || 
-          p.codigo.toLowerCase().includes(term.toLowerCase())
+          (p.nombre && p.nombre.toLowerCase().includes(searchLower)) || 
+          (p.codigoProducto && p.codigoProducto.toLowerCase().includes(searchLower)) ||
+          (p.codigo && p.codigo.toLowerCase().includes(searchLower))
         );
-        this.resultados.set(filtered);
+        // Ordenar por stock disponible primero
+        filtered.sort((a: any, b: any) => {
+          const aStock = a.stockActual || a.stock_actual || 0;
+          const bStock = b.stockActual || b.stock_actual || 0;
+          return bStock - aStock;
+        });
+        this.resultados.set(filtered.slice(0, 15)); // Limitar a 15 resultados
         this.buscando.set(false);
       },
       error: () => {
         this.buscando.set(false);
+        this.resultados.set([]);
       }
     });
   }
@@ -325,7 +337,7 @@ export class NuevaVentaComponent {
       const existing = items.find(i => i.productoId === prod.id);
       if (existing) {
         if (existing.cantidad >= existing.stockActual) {
-          this.toast.showWarning(`Stock mÃ¡ximo alcanzado para: ${prod.nombre}`);
+          this.toast.showWarning(`Stock máximo alcanzado para: ${prod.nombre}`);
           return items;
         }
         return items.map(i => i.productoId === prod.id ? { ...i, cantidad: i.cantidad + 1 } : i);
@@ -344,7 +356,7 @@ export class NuevaVentaComponent {
       return [...items, newItem];
     });
 
-    // Limpiar bÃºsqueda
+    // Limpiar búsqueda
     this.searchTerm.set('');
     this.resultados.set([]);
     document.getElementById('search-input')?.focus();
@@ -373,7 +385,7 @@ export class NuevaVentaComponent {
   }
 
   limpiarCarrito() {
-    if (confirm('Â¿EstÃ¡s seguro de limpiar el carrito?')) {
+    if (confirm('¿Estás seguro de limpiar el carrito?')) {
       this.carrito.set([]);
       this.montoPagado.set(0);
       this.descuentoGlobal.set(0);
