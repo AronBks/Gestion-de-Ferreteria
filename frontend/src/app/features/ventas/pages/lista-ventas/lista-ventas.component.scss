@@ -17,11 +17,11 @@ $text-primary: #ffffff;
 $text-secondary: #b0b0cc;
 $text-tertiary: #808094;
 
-$color-primary: #ff6b6b;
+$color-primary: #F59E0B;
 $color-success: #51cf66;
 $color-warning: #ffd93d;
 $color-danger: #ff6b6b;
-$color-info: #4dabf7;
+$color-info: #3498db;
 
 $spacing-xs: 0.25rem;
 $spacing-sm: 0.5rem;
@@ -61,7 +61,7 @@ $transition-slow: 0.5s ease-in-out;
 // ============================================================================
 
 .ventas-header {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
   padding: $spacing-xl $spacing-2xl;
   box-shadow: $shadow-lg;
   position: sticky;
@@ -140,7 +140,7 @@ $transition-slow: 0.5s ease-in-out;
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #ff6b6b, transparent);
+    background: linear-gradient(90deg, #F59E0B, transparent);
   }
 
   &:hover {
