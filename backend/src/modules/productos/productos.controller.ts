@@ -16,7 +16,7 @@ import { ProductosService } from './productos.service';
 import { CreateProductoDto, UpdateProductoDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
-@Controller('api/productos')
+@Controller('productos')
 export class ProductosController {
   constructor(private productosService: ProductosService) {}
 
