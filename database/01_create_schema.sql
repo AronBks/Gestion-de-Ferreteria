@@ -103,7 +103,7 @@ CREATE TABLE categorias (
 -- Descripción: Catálogo de productos de la ferretería
 -- ============================================================================
 CREATE TABLE productos (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id SERIAL PRIMARY KEY,
   codigo_producto VARCHAR(50) NOT NULL UNIQUE,
   nombre VARCHAR(255) NOT NULL,
   descripcion TEXT,
@@ -194,7 +194,7 @@ CREATE TABLE compras (
 CREATE TABLE detalle_compras (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   compra_id UUID NOT NULL,
-  producto_id UUID NOT NULL,
+  producto_id INT NOT NULL,
   cantidad INT NOT NULL,
   precio_unitario DECIMAL(12, 2) NOT NULL,
   subtotal DECIMAL(12, 2) NOT NULL,
@@ -212,7 +212,7 @@ CREATE TABLE detalle_compras (
 CREATE TABLE lotes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   numero_lote VARCHAR(100) NOT NULL UNIQUE,
-  producto_id UUID NOT NULL,
+  producto_id INT NOT NULL,
   cantidad_inicial INT NOT NULL,
   cantidad_disponible INT NOT NULL,
   fecha_fabricacion DATE,
@@ -266,7 +266,7 @@ CREATE TABLE ventas (
 CREATE TABLE detalle_ventas (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   venta_id UUID NOT NULL,
-  producto_id UUID NOT NULL,
+  producto_id INT NOT NULL,
   cantidad INT NOT NULL,
   precio_unitario DECIMAL(12, 2) NOT NULL,
   descuento_item DECIMAL(12, 2) DEFAULT 0,
@@ -326,7 +326,7 @@ CREATE TABLE movimientos_caja (
 -- ============================================================================
 CREATE TABLE alertas_inventario (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  producto_id UUID NOT NULL,
+  producto_id INT NOT NULL,
   tipo_alerta VARCHAR(50) NOT NULL,
   stock_actual INT NOT NULL,
   stock_minimo INT NOT NULL,

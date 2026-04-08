@@ -14,8 +14,8 @@ export class DetalleVenta {
   @JoinColumn({ name: 'venta_id' })
   venta: Venta;
 
-  @Column({ name: 'producto_id' })
-  productoId: string;
+  @Column({ name: 'producto_id', type: 'int' })
+  productoId: number;
 
   @ManyToOne(() => Producto)
   @JoinColumn({ name: 'producto_id' })

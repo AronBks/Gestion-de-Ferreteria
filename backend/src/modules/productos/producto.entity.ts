@@ -1,9 +1,10 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column, Generated } from 'typeorm';
 
 @Entity('productos')
 export class Producto {
-  @PrimaryColumn('uuid')
-  id: string;
+  @PrimaryColumn()
+  @Generated('increment')
+  id: number;
 
   @Column({ type: 'varchar', length: 50 })
   codigo_producto: string;
@@ -50,7 +51,15 @@ export class Producto {
   @Column({ name: 'creado_por', type: 'uuid', nullable: true })
   creado_por: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ 
+    type: 'enum',
+    enum: ['ACTIVO', 'INACTIVO', 'DESCONTINUADO'],
+    default: 'ACTIVO',
+    transformer: {
+      to: (value: string) => value ? value.toUpperCase() : 'ACTIVO',
+      from: (value: string) => value
+    }
+  })
   estado: string;
 
   @Column({ type: 'boolean', default: false })

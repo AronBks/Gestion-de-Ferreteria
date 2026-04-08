@@ -4,7 +4,31 @@
 
 Base de datos PostgreSQL diseñada para un **Sistema Integral de Punto de Venta (POS) y Control de Inventario** para una ferretería. Implementa **Clean Architecture** con completa trazabilidad, auditoría y escalabilidad.
 
-### Características Principales
+### 🔄 Cambios Recientes (v2.0)
+- ✅ **Cambio de IDs en Productos**: Migrada de UUID a SERIAL (INTEGER con auto-increment)
+  - Razón: Mejor integración con NestJS @Generated('increment'), URLs más legibles
+  - Afectadas tablas: `productos`, `detalle_compras`, `detalle_ventas`, `lotes`, `alertas_inventario`
+  - Implementado en: `01_create_schema.sql`
+
+---
+
+## 🚀 Instalación de Base de Datos
+
+### Opción 1: Base de Datos NUEVA (Recomendado)
+Ejecutar en PostgreSQL en este orden:
+```bash
+1. 01_create_schema.sql      # Crea todas las tablas con schema actualizado
+2. 02_insert_seeds.sql       # Inserta datos de prueba
+3. 03_create_views.sql       # Crea vistas de negocio
+4. 04_procedures_and_utilities.sql  # Procedimientos almacenados
+```
+
+### Opción 2: Base de Datos EXISTENTE (con UUIDs)
+Si tenías la BD anterior con UUIDs en productos, contacta al equipo dev para migración manual.
+
+---
+
+## 📋 Descripción General
 
 - ✅ **Integridad Referencial**: Relaciones bien definidas con ON DELETE y ON UPDATE
 - ✅ **Auditoría Completa**: Seguimiento de todos los cambios en el sistema

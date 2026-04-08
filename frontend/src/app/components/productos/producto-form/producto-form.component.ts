@@ -105,7 +105,6 @@ export class ProductoFormComponent implements OnInit, OnChanges {
   onSubmit(): void {
     if (this.form.invalid) {
       this.errorMessage = 'Por favor completa todos los campos correctamente';
-      console.log('❌ Formulario inválido:', this.form.errors);
       if (this.cdr?.markForCheck) this.cdr.markForCheck();
       return;
     }
@@ -114,24 +113,19 @@ export class ProductoFormComponent implements OnInit, OnChanges {
     this.errorMessage = '';
     const formData = this.form.value;
 
-    console.log('\n=== GUARDANDO PRODUCTO ===');
-    console.log('Modo:', this.isEditMode ? 'EDITAR' : 'CREAR');
-    console.log('Producto ID:', this.productoId);
-    console.log('Datos:', formData);
     if (this.cdr?.markForCheck) this.cdr.markForCheck();
 
     if (this.isEditMode && this.productoId) {
       // ACTUALIZAR producto
       this.productosService.actualizarProducto(this.productoId, formData).subscribe({
         next: (result: any) => {
-          console.log('✅ Producto actualizado:', result);
           this.loading = false;
           if (this.cdr?.markForCheck) this.cdr.markForCheck();
           this.saved.emit(result);
           this.closeModal();
         },
         error: (err: any) => {
-          console.error('❌ Error al actualizar:', err);
+          console.error('Error al actualizar producto:', err);
           this.loading = false;
           this.errorMessage = err.error?.message || err.error?.Error || 'Error al actualizar el producto';
           if (this.cdr?.markForCheck) this.cdr.markForCheck();
@@ -141,14 +135,13 @@ export class ProductoFormComponent implements OnInit, OnChanges {
       // CREAR producto
       this.productosService.crearProducto(formData).subscribe({
         next: (result: any) => {
-          console.log('✅ Producto creado:', result);
           this.loading = false;
           if (this.cdr?.markForCheck) this.cdr.markForCheck();
           this.saved.emit(result);
           this.closeModal();
         },
         error: (err: any) => {
-          console.error('❌ Error al crear:', err);
+          console.error('Error al crear producto:', err);
           this.loading = false;
           this.errorMessage = err.error?.message || err.error?.Error || 'Error al crear el producto';
           if (this.cdr?.markForCheck) this.cdr.markForCheck();
@@ -158,7 +151,6 @@ export class ProductoFormComponent implements OnInit, OnChanges {
   }
 
   closeModal(): void {
-    console.log('ProductoFormComponent: closeModal()');
     this.resetForm();
     this.close.emit();
   }

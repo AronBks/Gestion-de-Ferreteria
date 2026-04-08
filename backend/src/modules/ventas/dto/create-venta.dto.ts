@@ -1,10 +1,10 @@
-import { IsString, IsEnum, IsNumber, IsOptional, IsArray, ValidateNested, Min, IsUUID } from 'class-validator';
+import { IsString, IsEnum, IsNumber, IsOptional, IsArray, ValidateNested, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaymentMethod } from '../entities/venta.entity';
 
 export class CreateDetalleVentaDto {
-  @IsUUID()
-  productoId: string;
+  @IsNumber()
+  productoId: number;
 
   @IsNumber()
   @Min(1)

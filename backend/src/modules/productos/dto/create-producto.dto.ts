@@ -1,4 +1,5 @@
-import { IsString, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, IsIn } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateProductoDto {
   @IsString()
@@ -30,5 +31,9 @@ export class CreateProductoDto {
 
   @IsString()
   @IsOptional()
+  @IsIn(['ACTIVO', 'INACTIVO', 'DESCONTINUADO', 'activo', 'inactivo', 'descontinuado'], {
+    message: 'estado debe ser: ACTIVO, INACTIVO o DESCONTINUADO'
+  })
+  @Transform(({ value }) => value ? value.toUpperCase() : 'ACTIVO')
   estado?: string;
 }

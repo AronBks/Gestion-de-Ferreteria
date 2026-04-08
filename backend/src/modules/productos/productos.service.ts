@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Producto } from './producto.entity';
 import { CreateProductoDto, UpdateProductoDto } from './dto';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ProductosService {
@@ -17,11 +16,18 @@ export class ProductosService {
     usuarioId: string,
   ): Promise<Producto> {
     const { precio_costo, precio_venta } = createProductoDto;
+    
+    // ✅ VALIDACIÓN CRÍTICA: precio_venta debe ser >= precio_costo
+    if (precio_venta < precio_costo) {
+      throw new BadRequestException(
+        `El precio de venta (${precio_venta}) no puede ser menor que el precio de costo (${precio_costo})`,
+      );
+    }
+
     const margen_ganancia =
       precio_costo > 0 ? ((precio_venta - precio_costo) / precio_costo) * 100 : 0;
 
     const producto = this.productosRepository.create({
-      id: uuidv4(),
       ...createProductoDto,
       margen_ganancia,
       estado: 'ACTIVO',
@@ -71,9 +77,10 @@ export class ProductosService {
     };
   }
 
-  async findOne(id: string): Promise<Producto> {
+  async findOne(id: string | number): Promise<Producto> {
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
     const producto = await this.productosRepository.findOne({
-      where: { id },
+      where: { id: numericId },
     });
 
     if (!producto) {
@@ -84,16 +91,46 @@ export class ProductosService {
   }
 
   async update(
-    id: string,
+    id: string | number,
     updateProductoDto: UpdateProductoDto,
   ): Promise<Producto> {
-    const producto = await this.findOne(id);
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
+    // Obtener el producto actual
+    const producto = await this.productosRepository.findOne({
+      where: { id: numericId },
+    });
 
+    if (!producto) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+    }
+
+    // Obtener los precios a usar (nuevos o actuales)
+    const precio_costo = updateProductoDto.precio_costo ?? producto.precio_costo;
+    const precio_venta = updateProductoDto.precio_venta ?? producto.precio_venta;
+
+    // ✅ VALIDACIÓN CRÍTICA: precio_venta debe ser >= precio_costo
+    if (precio_venta < precio_costo) {
+      throw new BadRequestException(
+        `El precio de venta (${precio_venta}) no puede ser menor que el precio de costo (${precio_costo})`,
+      );
+    }
+
+    // Asignar nuevos valores al objeto
     Object.assign(producto, updateProductoDto);
-    return await this.productosRepository.save(producto);
+
+    // Recalcular margen si se modifican precios
+    if (updateProductoDto.precio_costo !== undefined || updateProductoDto.precio_venta !== undefined) {
+      producto.margen_ganancia = precio_costo > 0 ? ((precio_venta - precio_costo) / precio_costo) * 100 : 0;
+    }
+
+    // Guardar directamente con save() (más confiable que update())
+    const productoGuardado = await this.productosRepository.save(producto);
+
+    return productoGuardado;
   }
 
-  async remove(id: string): Promise<{ mensaje: string }> {
+  async remove(id: string | number): Promise<{ mensaje: string }> {
     const producto = await this.findOne(id);
     await this.productosRepository.remove(producto);
 
@@ -101,7 +138,7 @@ export class ProductosService {
   }
 
   async actualizarStock(
-    id: string,
+    id: string | number,
     cantidad: number,
     tipo: 'venta' | 'devolucion' | 'compra',
   ): Promise<Producto> {

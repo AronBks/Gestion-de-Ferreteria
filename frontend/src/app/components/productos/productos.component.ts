@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductoFormComponent } from './producto-form/producto-form.component';
 import { DeleteConfirmationComponent } from './delete-confirmation/delete-confirmation.component';
 import { ProductoViewDetailsComponent } from './producto-view-details/producto-view-details.component';
+import { ProductosService } from '../../services/productos.service';
 
 interface Producto {
   id: number;
@@ -727,80 +728,12 @@ export class ProductosComponent implements OnInit {
   productoAEliminar: Producto | null = null;
   productoVisualizando: Producto | null = null;
   
-  productos: Producto[] = [
-    {
-      id: 1,
-      codigo: 'PROD-001',
-      nombre: 'Tubo PVC 1"',
-      descripcion: 'Tubo de policloruro de vinilo para instalaciones hidráulicas',
-      costoBs: 45.50,
-      precioBs: 85.00,
-      ganancia: 39.50,
-      gananciaPercent: 86,
-      stock: 245,
-      estado: true
-    },
-    {
-      id: 2,
-      codigo: 'PROD-002',
-      nombre: 'Tornillos Acero 3/8"',
-      descripcion: 'Tornillos de acero inoxidable para construcción',
-      costoBs: 12.00,
-      precioBs: 25.50,
-      ganancia: 13.50,
-      gananciaPercent: 112,
-      stock: 198,
-      estado: true
-    },
-    {
-      id: 3,
-      codigo: 'PROD-003',
-      nombre: 'Brocha 2" Profesional',
-      descripcion: 'Brocha de cerdas naturales para pintura',
-      costoBs: 8.75,
-      precioBs: 18.90,
-      ganancia: 10.15,
-      gananciaPercent: 116,
-      stock: 156,
-      estado: true
-    },
-    {
-      id: 4,
-      codigo: 'PROD-004',
-      nombre: 'Cable Cobre 2mm',
-      descripcion: 'Cable de cobre puro para instalaciones eléctricas',
-      costoBs: 22.00,
-      precioBs: 42.00,
-      ganancia: 20.00,
-      gananciaPercent: 91,
-      stock: 12,
-      estado: true
-    },
-    {
-      id: 5,
-      codigo: 'PROD-005',
-      nombre: 'Cemento Gris 42.5kg',
-      descripcion: 'Cemento Portland para obras civiles',
-      costoBs: 35.00,
-      precioBs: 65.00,
-      ganancia: 30.00,
-      gananciaPercent: 86,
-      stock: 128,
-      estado: true
-    },
-    {
-      id: 6,
-      codigo: 'PROD-006',
-      nombre: 'Pernos M6 Acero',
-      descripcion: 'Pernos de acero galvanizado ',
-      costoBs: 2.50,
-      precioBs: 5.80,
-      ganancia: 3.30,
-      gananciaPercent: 132,
-      stock: 8,
-      estado: true
-    }
-  ];
+  // ← DATOS DEL BACKEND, NO HARDCODEADOS
+  productos: Producto[] = [];
+  
+  // Estado de carga
+  cargando = false;
+  errorCarga: string | null = null;
 
   productosFiltrados: Producto[] = [];
   searchTerm = '';
@@ -809,8 +742,49 @@ export class ProductosComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
 
+  constructor(
+    private productosService: ProductosService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
   ngOnInit(): void {
-    this.filtrar();
+    this.cargarProductosDelBackend();
+  }
+
+  /**
+   * CRÍTICO: Cargar datos reales del backend (NO datos hardcodeados)
+   */
+  private cargarProductosDelBackend(): void {
+    this.cargando = true;
+    this.errorCarga = null;
+    
+    this.productosService.obtenerProductos(1, 100).subscribe({
+      next: (response: any) => {
+        if (response.data && Array.isArray(response.data)) {
+          this.productos = response.data.map((p: any) => ({
+            id: p.id,
+            codigo: p.codigo_producto,
+            nombre: p.nombre,
+            descripcion: p.descripcion || '',
+            costoBs: p.precio_costo,
+            precioBs: p.precio_venta,
+            ganancia: p.precio_venta - p.precio_costo,
+            gananciaPercent: ((p.precio_venta - p.precio_costo) / p.precio_costo) * 100,
+            stock: p.stock_actual,
+            estado: p.estado === 'ACTIVO'
+          }));
+          
+          this.filtrar();
+          this.cdr.markForCheck();
+        }
+        
+        this.cargando = false;
+      },
+      error: (err: any) => {
+        this.errorCarga = err.error?.message || 'Error al cargar productos del servidor';
+        this.cargando = false;
+      }
+    });
   }
 
   filtrar(): void {
@@ -847,8 +821,30 @@ export class ProductosComponent implements OnInit {
   }
 
   toggleEstado(producto: Producto): void {
+    const nuevoEstado = producto.estado ? 'INACTIVO' : 'ACTIVO';
+    const estadoAnterior = producto.estado;
+    
+    // Optimistic update: cambiar en UI inmediatamente
     producto.estado = !producto.estado;
-    console.log(`Producto ${producto.nombre} - Estado: ${producto.estado ? 'Activo' : 'Inactivo'}`);
+    
+    // Enviar cambio al backend
+    this.productosService.actualizarProducto(producto.id.toString(), { 
+      estado: nuevoEstado 
+    }).subscribe({
+      next: (response: any) => {
+        // Estado actualizado correctamente
+      },
+      error: (err: any) => {
+        // Revertir cambio si falla
+        producto.estado = estadoAnterior;
+        
+        const errorMsg = err.error?.message || 'Error al cambiar estado del producto';
+        alert(`Error: ${errorMsg}`);
+        
+        // Recargar datos del backend para sincronizar
+        this.cargarProductosDelBackend();
+      }
+    });
   }
 
   abrirModalNuevo(): void {
@@ -862,54 +858,8 @@ export class ProductosComponent implements OnInit {
   }
 
   guardarProducto(productoFormulario: any): void {
-    // Convertir datos del formulario al formato de la tabla
-    if (this.productoEdicion) {
-      // Editar producto existente
-      const index = this.productos.findIndex(p => p.id === this.productoEdicion!.id);
-      if (index !== -1) {
-        const ganancia = productoFormulario.precio_venta - productoFormulario.precio_costo;
-        const gananciaPercent = (ganancia / productoFormulario.precio_costo) * 100;
-        
-        this.productos[index] = {
-          id: this.productoEdicion.id,
-          codigo: productoFormulario.codigo_producto,
-          nombre: productoFormulario.nombre,
-          descripcion: productoFormulario.descripcion || '',
-          costoBs: productoFormulario.precio_costo,
-          precioBs: productoFormulario.precio_venta,
-          ganancia: ganancia,
-          gananciaPercent: gananciaPercent,
-          stock: productoFormulario.stock_actual,
-          estado: productoFormulario.estado === 'activo'
-        };
-        
-        this.filtrar();
-        console.log('Producto actualizado:', this.productos[index]);
-      }
-    } else {
-      // Crear nuevo producto
-      const nuevoId = Math.max(...this.productos.map(p => p.id), 0) + 1;
-      const ganancia = productoFormulario.precio_venta - productoFormulario.precio_costo;
-      const gananciaPercent = (ganancia / productoFormulario.precio_costo) * 100;
-      
-      const nuevoProducto: Producto = {
-        id: nuevoId,
-        codigo: productoFormulario.codigo_producto,
-        nombre: productoFormulario.nombre,
-        descripcion: productoFormulario.descripcion || '',
-        costoBs: productoFormulario.precio_costo,
-        precioBs: productoFormulario.precio_venta,
-        ganancia: ganancia,
-        gananciaPercent: gananciaPercent,
-        stock: productoFormulario.stock_actual,
-        estado: productoFormulario.estado === 'activo'
-      };
-      
-      this.productos.push(nuevoProducto);
-      this.filtrar();
-      console.log('Nuevo producto agregado:', nuevoProducto);
-    }
-    
+    // Recargar TODOS los productos del backend después de guardar
+    this.cargarProductosDelBackend();
     this.cerrarFormulario();
   }
 
@@ -937,12 +887,16 @@ export class ProductosComponent implements OnInit {
 
   confirmarEliminacion(): void {
     if (this.productoAEliminar) {
-      const index = this.productos.findIndex(p => p.id === this.productoAEliminar!.id);
-      if (index !== -1) {
-        this.productos.splice(index, 1);
-        this.filtrar();
-        console.log('Producto eliminado:', this.productoAEliminar);
-      }
+      // Llamar al backend para eliminar
+      this.productosService.eliminarProducto(this.productoAEliminar.id.toString()).subscribe({
+        next: (response: any) => {
+          // Recargar lista del backend para asegurar sincronización
+          this.cargarProductosDelBackend();
+        },
+        error: (err: any) => {
+          alert('Error al eliminar producto: ' + (err.error?.message || 'Intenta de nuevo'));
+        }
+      });
     }
     this.cancelarEliminacion();
   }

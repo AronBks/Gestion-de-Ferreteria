@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -6,6 +7,18 @@ async function bootstrap() {
   
   // Prefijo global para todas las rutas
   app.setGlobalPrefix('api');
+
+  // ✅ AGREGADO: ValidationPipe global con transformers habilitados
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,           // Ignora propiedades no definidas
+      forbidNonWhitelisted: false, // Pero NO tira error, solo las ignora
+      transform: true,           // ✅ IMPORTANTE: Aplica los transformers del DTO
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
   
   // Habilitando CORS para que el frontend pueda comunicarse
   app.enableCors({

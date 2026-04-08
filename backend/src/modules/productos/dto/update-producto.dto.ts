@@ -1,6 +1,11 @@
-import { IsString, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, IsIn } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class UpdateProductoDto {
+  @IsString()
+  @IsOptional()
+  codigo_producto?: string;
+
   @IsString()
   @IsOptional()
   nombre?: string;
@@ -26,6 +31,42 @@ export class UpdateProductoDto {
 
   @IsString()
   @IsOptional()
+  @IsIn(['ACTIVO', 'INACTIVO', 'DESCONTINUADO', 'activo', 'inactivo', 'descontinuado'], {
+    message: 'estado debe ser: ACTIVO, INACTIVO o DESCONTINUADO'
+  })
+  @Transform(({ value }) => value ? value.toUpperCase() : value)
   estado?: string;
+
+  @IsNumber()
+  @IsOptional()
+  margen_ganancia?: number;
+
+  @IsString()
+  @IsOptional()
+  sku?: string;
+
+  @IsString()
+  @IsOptional()
+  codigo_barras?: string;
+
+  @IsString()
+  @IsOptional()
+  unidad_medida?: string;
+
+  @IsNumber()
+  @IsOptional()
+  stock_minimo?: number;
+
+  @IsNumber()
+  @IsOptional()
+  stock_maximo?: number;
+
+  @IsString()
+  @IsOptional()
+  imagen_url?: string;
+
+  @IsString()
+  @IsOptional()
+  categoria_id?: string;
 }
 

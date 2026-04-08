@@ -12,7 +12,7 @@ export const typeOrmAsyncConfig = (
     password: configService.get<string>('DB_PASSWORD'),
     database: configService.get<string>('DB_NAME'),
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    synchronize: false, // ⚠️ IMPORTANTE: No auto-sincronizar, la BD está controlada
+    synchronize: false, // ← Desactivado nuevamente
     logging: false,
   }),
   inject: [ConfigService],
