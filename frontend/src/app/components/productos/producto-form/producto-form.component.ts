@@ -2,7 +2,9 @@ import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Producto } from '../../../models/producto.model';
+import { Categoria } from '../../../models/categoria.model';
 import { ProductosService } from '../../../services/productos.service';
+import { CategoriasService } from '../../../services/categorias.service';
 
 @Component({
   selector: 'app-producto-form',
@@ -22,18 +24,22 @@ export class ProductoFormComponent implements OnInit, OnChanges {
   errorMessage = '';
   isEditMode = false;
   productoId: string | null = null;
+  
+  categorias: Categoria[] = [];
+  categoriasLoading = false;
 
   constructor(
     private formBuilder: FormBuilder,
     private productosService: ProductosService,
+    private categoriasService: CategoriasService,
     private cdr: ChangeDetectorRef
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
-    // Inicializar el formulario en blanco
     this.resetForm();
+    this.cargarCategorias();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -48,6 +54,7 @@ export class ProductoFormComponent implements OnInit, OnChanges {
           codigo_producto: productoActual.codigo_producto || '',
           nombre: productoActual.nombre || '',
           descripcion: productoActual.descripcion || '',
+          categoria_id: productoActual.categoria_id || '',
           precio_costo: productoActual.precio_costo || 0,
           precio_venta: productoActual.precio_venta || 0,
           stock_actual: productoActual.stock_actual || 0,
@@ -60,7 +67,6 @@ export class ProductoFormComponent implements OnInit, OnChanges {
       }
     }
     
-    // Guard para evitar error si cdr no está inicializado
     if (this.cdr && typeof this.cdr.markForCheck === 'function') {
       this.cdr.markForCheck();
     }
@@ -71,6 +77,7 @@ export class ProductoFormComponent implements OnInit, OnChanges {
       codigo_producto: ['', [Validators.required, Validators.minLength(3)]],
       nombre: ['', [Validators.required, Validators.minLength(5)]],
       descripcion: ['', Validators.maxLength(500)],
+      categoria_id: ['', [Validators.required]],
       precio_costo: [0, [Validators.required, Validators.min(0.01)]],
       precio_venta: [0, [Validators.required, Validators.min(0.01)]],
       stock_actual: [0, [Validators.required, Validators.min(0)]],
@@ -83,6 +90,7 @@ export class ProductoFormComponent implements OnInit, OnChanges {
       codigo_producto: '',
       nombre: '',
       descripcion: '',
+      categoria_id: '',
       precio_costo: 0,
       precio_venta: 0,
       stock_actual: 0,
@@ -91,6 +99,22 @@ export class ProductoFormComponent implements OnInit, OnChanges {
     this.errorMessage = '';
     this.isEditMode = false;
     this.productoId = null;
+  }
+
+  private cargarCategorias(): void {
+    this.categoriasLoading = true;
+    this.categoriasService.obtenerCategorias().subscribe({
+      next: (data) => {
+        this.categorias = data;
+        this.categoriasLoading = false;
+        if (this.cdr?.markForCheck) this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error al cargar categorías:', err);
+        this.categoriasLoading = false;
+        if (this.cdr?.markForCheck) this.cdr.markForCheck();
+      }
+    });
   }
 
   getFieldError(fieldName: string): string {
@@ -151,7 +175,7 @@ export class ProductoFormComponent implements OnInit, OnChanges {
   }
 
   closeModal(): void {
-    this.resetForm();
     this.close.emit();
+    this.resetForm();
   }
 }

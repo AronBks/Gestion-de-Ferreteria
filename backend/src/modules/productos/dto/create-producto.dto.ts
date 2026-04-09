@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, Min, IsIn } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, IsIn, IsUUID } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateProductoDto {
@@ -16,6 +16,9 @@ export class CreateProductoDto {
   @Min(0)
   precio_costo: number;
 
+  @IsUUID('4', { message: 'categoria_id debe ser un UUID válido' })
+  categoria_id: string;
+
   @IsNumber()
   @Min(0)
   @IsOptional()
@@ -24,10 +27,6 @@ export class CreateProductoDto {
   @IsString()
   @IsOptional()
   descripcion?: string;
-
-  @IsString()
-  @IsOptional()
-  categoria_id?: string;
 
   @IsString()
   @IsOptional()

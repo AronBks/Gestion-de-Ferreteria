@@ -3,7 +3,7 @@ export interface Producto {
   codigo_producto: string;
   nombre: string;
   descripcion?: string;
-  categoria_id?: string;
+  categoria_id: string;
   precio_costo: number;
   precio_venta: number;
   margen_ganancia?: number;

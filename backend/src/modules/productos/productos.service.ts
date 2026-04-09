@@ -3,21 +3,38 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Producto } from './producto.entity';
 import { CreateProductoDto, UpdateProductoDto } from './dto';
+import { CategoriasService } from '../categorias/categorias.service';
 
 @Injectable()
 export class ProductosService {
   constructor(
     @InjectRepository(Producto)
     private productosRepository: Repository<Producto>,
+    private categoriasService: CategoriasService,
   ) {}
 
   async create(
     createProductoDto: CreateProductoDto,
     usuarioId: string,
   ): Promise<Producto> {
-    const { precio_costo, precio_venta } = createProductoDto;
+    const { precio_costo, precio_venta, categoria_id } = createProductoDto;
     
-    // ✅ VALIDACIÓN CRÍTICA: precio_venta debe ser >= precio_costo
+    // ✅ VALIDACIÓN 1: categoria_id debe ser válido
+    if (!categoria_id || categoria_id.trim() === '') {
+      throw new BadRequestException(
+        'categoria_id es requerido y no puede estar vacío',
+      );
+    }
+
+    // ✅ VALIDACIÓN 2: La categoría debe existir
+    const categoria = await this.categoriasService.findOne(categoria_id);
+    if (!categoria) {
+      throw new NotFoundException(
+        `Categoría con ID ${categoria_id} no encontrada`,
+      );
+    }
+
+    // ✅ VALIDACIÓN 3: precio_venta debe ser >= precio_costo
     if (precio_venta < precio_costo) {
       throw new BadRequestException(
         `El precio de venta (${precio_venta}) no puede ser menor que el precio de costo (${precio_costo})`,

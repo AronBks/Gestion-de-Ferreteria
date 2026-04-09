@@ -110,7 +110,7 @@ CREATE TABLE productos (
   categoria_id UUID NOT NULL,
   precio_costo DECIMAL(12, 2) NOT NULL,
   precio_venta DECIMAL(12, 2) NOT NULL,
-  margen_ganancia DECIMAL(5, 2) NOT NULL,
+  margen_ganancia DECIMAL(10, 2),
   unidad_medida VARCHAR(20) NOT NULL DEFAULT 'UNIDAD',
   stock_actual INT NOT NULL DEFAULT 0,
   stock_minimo INT NOT NULL DEFAULT 10,

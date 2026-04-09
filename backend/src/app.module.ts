@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { typeOrmAsyncConfig } from './database';
 import { UsuariosModule } from './modules/usuarios/usuarios.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CategoriasModule } from './modules/categorias/categorias.module';
 import { ProductosModule } from './modules/productos/productos.module';
 import { VentasModule } from './modules/ventas/ventas.module';
 import { ReportesModule } from './modules/reportes/reportes.module';
@@ -21,6 +22,7 @@ import { ReportesModule } from './modules/reportes/reportes.module';
     ),
     UsuariosModule,
     AuthModule,
+    CategoriasModule,
     ProductosModule,
     VentasModule,
     ReportesModule,

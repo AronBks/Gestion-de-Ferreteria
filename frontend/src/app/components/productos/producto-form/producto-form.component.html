@@ -58,6 +58,27 @@
             ></textarea>
           </div>
 
+          <!-- Categoría -->
+          <div class="form-group mb-3">
+            <label class="form-label">Categoría <span class="text-danger">*</span></label>
+            <select
+              class="form-control"
+              [class.is-invalid]="form.get('categoria_id')?.invalid && form.get('categoria_id')?.touched"
+              formControlName="categoria_id"
+            >
+              <option value="">-- Seleccionar Categoría --</option>
+              <option *ngFor="let cat of categorias" [value]="cat.id">
+                {{ cat.nombre }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="form.get('categoria_id')?.invalid && form.get('categoria_id')?.touched">
+              {{ getFieldError('categoria_id') }}
+            </div>
+            <small *ngIf="categoriasLoading" class="form-text text-muted">
+              Cargando categorías...
+            </small>
+          </div>
+
           <!-- Row: Precios -->
           <div class="row">
             <div class="col-md-6">

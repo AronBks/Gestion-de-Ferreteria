@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, Min, IsIn } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, IsIn, IsUUID } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class UpdateProductoDto {
@@ -28,6 +28,10 @@ export class UpdateProductoDto {
   @IsString()
   @IsOptional()
   descripcion?: string;
+
+  @IsUUID('4', { message: 'categoria_id debe ser un UUID válido' })
+  @IsOptional()
+  categoria_id?: string;
 
   @IsString()
   @IsOptional()
@@ -64,9 +68,5 @@ export class UpdateProductoDto {
   @IsString()
   @IsOptional()
   imagen_url?: string;
-
-  @IsString()
-  @IsOptional()
-  categoria_id?: string;
 }
 
