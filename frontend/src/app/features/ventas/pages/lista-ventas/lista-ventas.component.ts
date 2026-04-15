@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VentasService } from '../../services/ventas.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ToastService } from '../../../../core/services/toast.service';
 
 interface Venta {
@@ -26,6 +26,7 @@ interface Venta {
 export class ListaVentasComponent implements OnInit {
   private ventasService = inject(VentasService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
 
   ventas = signal<Venta[]>([]);
@@ -75,11 +76,11 @@ export class ListaVentasComponent implements OnInit {
   }
 
   irANuevaVenta() {
-    this.router.navigate(['/ventas/nueva']);
+    this.router.navigate(['nueva'], { relativeTo: this.route });
   }
 
   verDetalle(id: string) {
-    this.router.navigate(['/ventas', id]);
+    this.router.navigate([id], { relativeTo: this.route });
   }
 
   confirmarCancelacion(venta: Venta) {

@@ -1,0 +1,263 @@
+<div class="pos-container">
+  <!-- HEADER -->
+  <header class="pos-header">
+    <div class="header-content">
+      <div class="header-title-section">
+        <h1 class="pos-title">Punto de Venta</h1>
+        <p class="pos-subtitle">{{ fechaFormato() }}</p>
+      </div>
+      <div class="header-total">
+        <div class="total-amount">Bs. {{ total() | number:'1.2-2' }}</div>
+        <div class="total-label">Total</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="pos-main">
+    <div class="pos-grid">
+      
+      <!-- LEFT SECTION: BÚSQUEDA Y CARRITO -->
+      <section class="pos-left">
+        
+        <!-- BÚSQUEDA -->
+        <div class="search-section">
+          <div class="search-container">
+            <span class="search-icon material-icons">search</span>
+            <input 
+              id="search-input"
+              type="text" 
+              [ngModel]="searchTerm()"
+              (ngModelChange)="onSearchChange($event)"
+              placeholder="Buscar producto..."
+              class="search-input"
+              autocomplete="off"
+            >
+            @if (buscando()) {
+              <span class="search-loader material-icons">refresh</span>
+            }
+          </div>
+
+          <!-- DROPDOWN RESULTADOS -->
+          @if (resultados().length > 0 && searchTerm().length > 0) {
+            <div class="search-dropdown">
+              @for (prod of resultados(); track prod.id) {
+                <button
+                  (click)="agregarAlCarrito(prod)"
+                  class="search-result-item"
+                  [class.disabled]="prod.stockActual <= 0"
+                  [disabled]="prod.stockActual <= 0"
+                >
+                  <div class="result-info">
+                    <p class="result-name">{{ prod.nombre }}</p>
+                    <div class="result-details">
+                      <span class="result-code">{{ prod.codigoProducto }}</span>
+                      <span class="result-stock">Stock: {{ prod.stockActual }}</span>
+                    </div>
+                  </div>
+                  <div class="result-price">Bs. {{ prod.precioVenta | number:'1.2-2' }}</div>
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- CARRITO -->
+        <div class="cart-section">
+          @if (carrito().length === 0) {
+            <div class="cart-empty">
+              <span class="empty-icon material-icons">shopping_cart</span>
+              <h3 class="empty-title">Carrito vacío</h3>
+              <p class="empty-text">Busca un producto para comenzar</p>
+            </div>
+          } @else {
+            <div class="cart-items">
+              @for (item of carrito(); track item.productoId) {
+                <div class="cart-item">
+                  <div class="item-header">
+                    <div class="item-name">{{ item.nombre }}</div>
+                    <button
+                      (click)="quitarDelCarrito(item.productoId)"
+                      class="item-delete-btn"
+                      title="Eliminar"
+                    >
+                      <span class="material-icons">close</span>
+                    </button>
+                  </div>
+                  
+                  <div class="item-unitprice">Bs. {{ item.precioUnitario | number:'1.2-2' }} c/u</div>
+                  
+                  <div class="item-controls">
+                    <div class="quantity-control">
+                      <button (click)="cambiarCantidad(item, -1)" class="qty-btn">−</button>
+                      <input 
+                        type="number" 
+                        [ngModel]="item.cantidad" 
+                        (ngModelChange)="setCantidad(item, $event)"
+                        class="qty-input"
+                        min="1"
+                      >
+                      <button (click)="cambiarCantidad(item, 1)" class="qty-btn">+</button>
+                    </div>
+                    <div class="item-subtotal">
+                      Bs. {{ ((item.precioUnitario * item.cantidad) - item.descuentoItem) | number:'1.2-2' }}
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- RIGHT SECTION: RESUMEN Y PAGO -->
+      <section class="pos-right">
+        
+        <!-- CLIENTE -->
+        <div class="client-card">
+          <h3 class="card-title">
+            <span class="material-icons">person</span> Cliente
+          </h3>
+          <div class="form-group">
+            <label>Nombre</label>
+            <input 
+              type="text" 
+              [(ngModel)]="clienteNombre" 
+              placeholder="Opcional"
+              class="form-input"
+            >
+          </div>
+          <div class="form-group">
+            <label>CI/NIT</label>
+            <input 
+              type="text" 
+              [(ngModel)]="clienteDocumento" 
+              placeholder="Opcional"
+              class="form-input"
+            >
+          </div>
+        </div>
+
+        <!-- RESUMEN FINANCIERO -->
+        <div class="summary-card">
+          <div class="summary-row">
+            <span class="summary-label">Subtotal</span>
+            <span class="summary-value">Bs. {{ subtotal() | number:'1.2-2' }}</span>
+          </div>
+          
+          @if (descuentoGlobal() > 0) {
+            <div class="summary-row discount">
+              <span class="summary-label">Descuento</span>
+              <span class="summary-value">- Bs. {{ descuentoGlobal() | number:'1.2-2' }}</span>
+            </div>
+          }
+
+          <div class="summary-total">
+            <span class="total-label">TOTAL</span>
+            <span class="total-value">Bs. {{ total() | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- MÉTODO DE PAGO -->
+        <div class="payment-card">
+          <h3 class="card-title">Método de Pago</h3>
+          
+          <div class="payment-methods">
+            <button 
+              (click)="setMetodoPago('EFECTIVO')" 
+              [class.active]="metodoPago() === 'EFECTIVO'"
+              class="payment-btn"
+            >
+              <span class="material-icons">payments</span>
+              <span>EFECTIVO</span>
+            </button>
+            <button 
+              (click)="setMetodoPago('TARJETA_DEBITO')" 
+              [class.active]="metodoPago() === 'TARJETA_DEBITO'"
+              class="payment-btn"
+            >
+              <span class="material-icons">credit_card</span>
+              <span>DÉBITO</span>
+            </button>
+            <button 
+              (click)="setMetodoPago('TARJETA_CREDITO')" 
+              [class.active]="metodoPago() === 'TARJETA_CREDITO'"
+              class="payment-btn"
+            >
+              <span class="material-icons">card_giftcard</span>
+              <span>CRÉDITO</span>
+            </button>
+            <button 
+              (click)="setMetodoPago('TRANSFERENCIA')" 
+              [class.active]="metodoPago() === 'TRANSFERENCIA'"
+              class="payment-btn"
+            >
+              <span class="material-icons">account_balance</span>
+              <span>TRANS.</span>
+            </button>
+          </div>
+
+          <!-- EFECTIVO -->
+          @if (metodoPago() === 'EFECTIVO') {
+            <div class="payment-details cash">
+              <div class="payment-field">
+                <label>Monto Recibido</label>
+                <div class="currency-input">
+                  <span class="currency">Bs.</span>
+                  <input 
+                    type="number" 
+                    [ngModel]="montoPagado()" 
+                    (ngModelChange)="montoPagado.set($event)"
+                    class="amount-input"
+                  >
+                </div>
+              </div>
+              <div class="payment-change" [class.negative]="vuelto() < 0">
+                <label>Vuelto</label>
+                <div class="change-value">Bs. {{ vuelto() | number:'1.2-2' }}</div>
+              </div>
+            </div>
+          }
+
+          <!-- OTROS MÉTODOS -->
+          @if (metodoPago() !== 'EFECTIVO') {
+            <div class="payment-details">
+              <label>N° Referencia/Autorización</label>
+              <input 
+                type="text" 
+                [(ngModel)]="numeroReferencia" 
+                placeholder="Ingresa número de referencia"
+                class="form-input"
+              >
+            </div>
+          }
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="actions-grid">
+          <button 
+            (click)="limpiarCarrito()"
+            class="action-btn secondary"
+          >
+            <span class="material-icons">delete</span>
+            <span>Limpiar</span>
+          </button>
+          <button 
+            (click)="confirmarVenta()"
+            [disabled]="carrito().length === 0 || processing() || (metodoPago() === 'EFECTIVO' && vuelto() < 0)"
+            class="action-btn primary"
+          >
+            @if(processing()) {
+              <span class="material-icons loading">refresh</span>
+              <span>Procesando...</span>
+            } @else {
+              <span class="material-icons">check_circle</span>
+              <span>Cobrar</span>
+            }
+          </button>
+        </div>
+
+      </section>
+    </div>
+  </main>
+</div>

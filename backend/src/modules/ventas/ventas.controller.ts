@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards, Request, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { VentasService } from './ventas.service';
 import { CreateVentaDto } from './dto/create-venta.dto';
 import { FilterVentasDto } from './dto/filter-ventas.dto';
@@ -16,26 +16,37 @@ export class VentasController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles('ADMIN', 'GERENTE', 'VENDEDOR')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear nueva venta (POS)' })
-  create(@Body() createVentaDto: CreateVentaDto, @Request() req) {
-    return this.ventasService.create(createVentaDto, req.user.id);
+  @ApiResponse({ status: 201, description: 'Venta creada exitosamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos o stock insuficiente' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  async create(@Body() createVentaDto: CreateVentaDto, @Request() req) {
+    try {
+      console.log(`[CREATE VENTA] Usuario: ${req.user.id}, Payload:`, createVentaDto);
+      return await this.ventasService.create(createVentaDto, req.user.id);
+    } catch (error) {
+      console.error('[CREATE VENTA ERROR]', error.message);
+      throw error;
+    }
   }
 
   @Get('resumen/hoy')
   @ApiOperation({ summary: 'Resumen de ventas del día actual' })
-  getResumenHoy() {
+  async getResumenHoy() {
     return this.ventasService.getResumenHoy();
   }
 
   @Get()
   @ApiOperation({ summary: 'Listar ventas con filtros y paginación' })
-  findAll(@Query() filterDto: FilterVentasDto) {
+  @ApiResponse({ status: 200, description: 'Lista de ventas' })
+  async findAll(@Query() filterDto: FilterVentasDto) {
     return this.ventasService.findAll(filterDto);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Buscar detalle de una venta por ID' })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.ventasService.findOne(id);
   }
 
@@ -44,7 +55,7 @@ export class VentasController {
   @ApiBearerAuth()
   @Roles('ADMIN', 'GERENTE')
   @ApiOperation({ summary: 'Cancelar una venta (devuelve stock)' })
-  cancelar(@Param('id') id: string) {
+  async cancelar(@Param('id') id: string) {
     return this.ventasService.cancelar(id);
   }
 }

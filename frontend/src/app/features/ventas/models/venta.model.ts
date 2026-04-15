@@ -19,8 +19,8 @@ export interface Venta {
 
 export interface DetalleVenta {
   id?: string;
-  productoId: string;
-  producto?: { id: string; nombre: string; codigoProducto: string };
+  productoId: number;
+  producto?: { id: number; nombre: string; codigoProducto: string };
   cantidad: number;
   precioUnitario: number;
   descuentoItem?: number;
@@ -39,7 +39,7 @@ export interface CreateVentaPayload {
   descuentoTotal?: number;
   observaciones?: string;
   items: {
-    productoId: string;
+    productoId: number;
     cantidad: number;
     precioUnitario: number;
     descuentoItem?: number;

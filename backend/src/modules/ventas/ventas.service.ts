@@ -21,18 +21,37 @@ export class VentasService {
     await queryRunner.startTransaction();
 
     try {
+      // Validar que hay items
+      if (!createVentaDto.items || createVentaDto.items.length === 0) {
+        throw new BadRequestException('Debe incluir al menos un producto en la venta');
+      }
+
       let subtotalCalculado = 0;
       const detallesToSave: any[] = [];
 
+      // Procesar cada item
       for (const item of createVentaDto.items) {
-        const producto = await queryRunner.manager.findOne(Producto, { where: { id: item.productoId } });
-        if (!producto || producto.stock_actual < item.cantidad) {
-          throw new BadRequestException(`Stock insuficiente para el producto ${producto?.nombre}`);
+        if (!item.productoId || item.cantidad <= 0) {
+          throw new BadRequestException('Producto ID y cantidad son requeridos y deben ser válidos');
         }
 
+        const producto = await queryRunner.manager.findOne(Producto, { where: { id: item.productoId } });
+        
+        if (!producto) {
+          throw new BadRequestException(`Producto con ID ${item.productoId} no encontrado`);
+        }
+
+        if (producto.stock_actual < item.cantidad) {
+          throw new BadRequestException(
+            `Stock insuficiente para "${producto.nombre}". Disponible: ${producto.stock_actual}, Solicitado: ${item.cantidad}`
+          );
+        }
+
+        // Decrementar stock
         producto.stock_actual -= item.cantidad;
         await queryRunner.manager.save(Producto, producto);
 
+        // Calcular subtotal del item
         const subtotalItem = (item.precioUnitario * item.cantidad) - (item.descuentoItem || 0);
         subtotalCalculado += subtotalItem;
 
@@ -45,32 +64,55 @@ export class VentasService {
         });
       }
 
+      // Calcular totales
       const igv = subtotalCalculado * 0.0; // 0% Bolivia
-      const total = subtotalCalculado + igv - (createVentaDto.descuentoTotal || 0);
+      const descuentoTotal = createVentaDto.descuentoTotal || 0;
+      const total = subtotalCalculado + igv - descuentoTotal;
       const vuelto = createVentaDto.montoPagado - total;
 
+      // Validar monto pagado
+      if (createVentaDto.montoPagado < total) {
+        throw new BadRequestException(
+          `Monto pagado insuficiente. Total: ${total}, Pagado: ${createVentaDto.montoPagado}`
+        );
+      }
+
+      // Generar número de venta
       const count = await this.ventaRepository.count();
       const numeroVenta = `VEN-${(count + 1).toString().padStart(6, '0')}`;
 
+      // Crear venta
       const nuevaVenta = queryRunner.manager.create(Venta, {
-        ...createVentaDto,
+        clienteNombre: createVentaDto.clienteNombre,
+        clienteDocumento: createVentaDto.clienteDocumento,
+        tipoComprobante: createVentaDto.tipoComprobante,
         numeroVenta,
         vendedorId: userId,
         creadoPor: userId,
         subtotal: subtotalCalculado,
         igv,
+        descuentoTotal,
         total,
+        montoPagado: createVentaDto.montoPagado,
         vuelto,
+        metodoPago: createVentaDto.metodoPago,
+        observaciones: createVentaDto.observaciones,
         estado: SaleStatus.COMPLETADA
       });
 
       const ventaGuardada = await queryRunner.manager.save(Venta, nuevaVenta);
 
+      // Insertar detalles
       const detalles = detallesToSave.map(item => ({ ...item, ventaId: ventaGuardada.id }));
       await queryRunner.manager.insert(DetalleVenta, detalles);
 
       await queryRunner.commitTransaction();
-      return ventaGuardada;
+      
+      // Retornar venta con relaciones
+      return await this.ventaRepository.findOne({
+        where: { id: ventaGuardada.id },
+        relations: ['vendedor', 'detalles']
+      });
 
     } catch (error) {
       await queryRunner.rollbackTransaction();
