@@ -29,6 +29,7 @@ export class UpdateProductoDto {
   @IsOptional()
   descripcion?: string;
 
+  // ✅ ARREGLADO: categoria_id puede ser opcional, pero si se envía debe ser UUID válido
   @IsUUID('4', { message: 'categoria_id debe ser un UUID válido' })
   @IsOptional()
   categoria_id?: string;

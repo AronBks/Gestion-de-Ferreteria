@@ -119,20 +119,31 @@ export class ProductosService {
   ): Promise<Producto> {
     const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
     
-    // Obtener el producto actual
+    // Obtener el producto actual con relación
     const producto = await this.productosRepository.findOne({
       where: { id: numericId },
+      relations: ['categoria'],
     });
 
     if (!producto) {
       throw new NotFoundException(`Producto con ID ${id} no encontrado`);
     }
 
+    // ✅ VALIDACIÓN 1: Si cambia categoría, validar que exista
+    if (updateProductoDto.categoria_id && updateProductoDto.categoria_id.trim() !== '') {
+      const categoria = await this.categoriasService.findOne(updateProductoDto.categoria_id);
+      if (!categoria) {
+        throw new NotFoundException(
+          `Categoría con ID ${updateProductoDto.categoria_id} no encontrada`,
+        );
+      }
+    }
+
     // Obtener los precios a usar (nuevos o actuales)
     const precio_costo = updateProductoDto.precio_costo ?? producto.precio_costo;
     const precio_venta = updateProductoDto.precio_venta ?? producto.precio_venta;
 
-    // ✅ VALIDACIÓN CRÍTICA: precio_venta debe ser >= precio_costo
+    // ✅ VALIDACIÓN 2: precio_venta debe ser >= precio_costo
     if (precio_venta < precio_costo) {
       throw new BadRequestException(
         `El precio de venta (${precio_venta}) no puede ser menor que el precio de costo (${precio_costo})`,
@@ -148,9 +159,15 @@ export class ProductosService {
     }
 
     // Guardar directamente con save() (más confiable que update())
-    const productoGuardado = await this.productosRepository.save(producto);
+    await this.productosRepository.save(producto);
 
-    return productoGuardado;
+    // Recargar con relación para devolver categoría
+    const productoActualizado = await this.productosRepository.findOne({
+      where: { id: numericId },
+      relations: ['categoria'],
+    });
+
+    return productoActualizado!;
   }
 
   async remove(id: string | number): Promise<{ mensaje: string }> {

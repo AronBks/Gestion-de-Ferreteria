@@ -50,22 +50,44 @@ export class ProductoFormComponent implements OnInit, OnChanges {
         this.isEditMode = true;
         this.productoId = productoActual.id;
         
-        this.form.patchValue({
-          codigo_producto: productoActual.codigo_producto || '',
-          nombre: productoActual.nombre || '',
-          descripcion: productoActual.descripcion || '',
-          categoria_id: productoActual.categoria_id || '',
-          precio_costo: productoActual.precio_costo || 0,
-          precio_venta: productoActual.precio_venta || 0,
-          stock_actual: productoActual.stock_actual || 0,
-          estado: productoActual.estado || 'ACTIVO'
-        });
+        // ✅ ARREGLADO: Esperar a que categorías carguen para hacer patchValue
+        if (this.categorias.length > 0) {
+          this.cargarProductoEnFormulario(productoActual);
+        } else {
+          // Si las categorías aún no han cargado, esperar un poco y reintentar
+          setTimeout(() => {
+            if (this.categorias.length > 0) {
+              this.cargarProductoEnFormulario(productoActual);
+            } else {
+              // Cargar de todas formas aunque no haya categorías
+              this.cargarProductoEnFormulario(productoActual);
+            }
+          }, 500);
+        }
       } else {
         this.isEditMode = false;
         this.productoId = null;
         this.resetForm();
       }
     }
+    
+    if (this.cdr && typeof this.cdr.markForCheck === 'function') {
+      this.cdr.markForCheck();
+    }
+  }
+
+  // ✅ NUEVA: Método para cargar producto en formulario
+  private cargarProductoEnFormulario(producto: Producto): void {
+    this.form.patchValue({
+      codigo_producto: producto.codigo_producto || '',
+      nombre: producto.nombre || '',
+      descripcion: producto.descripcion || '',
+      categoria_id: producto.categoria_id || '', // ✅ Asegurar que se carga la categoría
+      precio_costo: producto.precio_costo || 0,
+      precio_venta: producto.precio_venta || 0,
+      stock_actual: producto.stock_actual || 0,
+      estado: producto.estado || 'ACTIVO'
+    });
     
     if (this.cdr && typeof this.cdr.markForCheck === 'function') {
       this.cdr.markForCheck();
