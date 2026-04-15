@@ -11,7 +11,8 @@ interface Producto {
   codigo: string;
   nombre: string;
   descripcion: string;
-  categoryName: string;           // ✅ NUEVA: Nombre de la categoría
+  categoria_id: string;           // ✅ Agregado: ID de categoría para editar
+  categoryName: string;           // ✅ Nombre de la categoría para mostrar
   costoBs: number;
   precioBs: number;
   ganancia: number;
@@ -782,7 +783,8 @@ export class ProductosComponent implements OnInit {
             codigo: p.codigo_producto,
             nombre: p.nombre,
             descripcion: p.descripcion || '',
-            categoryName: p.categoria?.nombre || 'Sin categoría', // ✅ Mapear categoría
+            categoria_id: p.categoria_id || '', // ✅ Incluir para editar
+            categoryName: p.categoria?.nombre || 'Sin categoría',
             costoBs: p.precio_costo,
             precioBs: p.precio_venta,
             ganancia: p.precio_venta - p.precio_costo,

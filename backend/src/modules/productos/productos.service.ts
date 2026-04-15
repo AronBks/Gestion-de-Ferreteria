@@ -150,16 +150,30 @@ export class ProductosService {
       );
     }
 
-    // Asignar nuevos valores al objeto
-    Object.assign(producto, updateProductoDto);
+    // Preparar datos para actualizar
+    const actualizacion: any = {};
+    if (updateProductoDto.codigo_producto) actualizacion.codigo_producto = updateProductoDto.codigo_producto;
+    if (updateProductoDto.nombre) actualizacion.nombre = updateProductoDto.nombre;
+    if (updateProductoDto.descripcion !== undefined) actualizacion.descripcion = updateProductoDto.descripcion;
+    if (updateProductoDto.categoria_id) actualizacion.categoria_id = updateProductoDto.categoria_id;
+    if (updateProductoDto.precio_costo !== undefined) actualizacion.precio_costo = updateProductoDto.precio_costo;
+    if (updateProductoDto.precio_venta !== undefined) actualizacion.precio_venta = updateProductoDto.precio_venta;
+    if (updateProductoDto.stock_actual !== undefined) actualizacion.stock_actual = updateProductoDto.stock_actual;
+    if (updateProductoDto.estado) actualizacion.estado = updateProductoDto.estado;
+    if (updateProductoDto.sku !== undefined) actualizacion.sku = updateProductoDto.sku;
 
     // Recalcular margen si se modifican precios
     if (updateProductoDto.precio_costo !== undefined || updateProductoDto.precio_venta !== undefined) {
-      producto.margen_ganancia = precio_costo > 0 ? ((precio_venta - precio_costo) / precio_costo) * 100 : 0;
+      actualizacion.margen_ganancia = precio_costo > 0 ? ((precio_venta - precio_costo) / precio_costo) * 100 : 0;
     }
 
-    // Guardar directamente con save() (más confiable que update())
-    await this.productosRepository.save(producto);
+    // ✅ Usar QueryBuilder para UPDATE (más confiable que Object.assign + save)
+    await this.productosRepository
+      .createQueryBuilder()
+      .update(Producto)
+      .set(actualizacion)
+      .where('id = :id', { id: numericId })
+      .execute();
 
     // Recargar con relación para devolver categoría
     const productoActualizado = await this.productosRepository.findOne({
