@@ -11,6 +11,7 @@ interface Producto {
   codigo: string;
   nombre: string;
   descripcion: string;
+  categoryName: string;           // ✅ NUEVA: Nombre de la categoría
   costoBs: number;
   precioBs: number;
   ganancia: number;
@@ -51,9 +52,7 @@ interface Producto {
         <div class="filters">
           <select [(ngModel)]="filtroCategoria" (change)="filtrar()" class="select-filter">
             <option value="">Todas las categorías</option>
-            <option value="herramientas">Herramientas</option>
-            <option value="materiales">Materiales</option>
-            <option value="accesorios">Accesorios</option>
+            <option *ngFor="let cat of categoriasUnicas" [value]="cat">{{ cat }}</option>
           </select>
 
           <select [(ngModel)]="filtroEstado" (change)="filtrar()" class="select-filter">
@@ -86,6 +85,7 @@ interface Producto {
               <th>CÓDIGO</th>
               <th>NOMBRE</th>
               <th>DESCRIPCIÓN</th>
+              <th>CATEGORÍA</th>
               <th>COSTO Bs.</th>
               <th>PRECIO Bs.</th>
               <th>GANANCIA</th>
@@ -106,6 +106,9 @@ interface Producto {
                 <span class="text-secondary" [title]="producto.descripcion">
                   {{ producto.descripcion | slice:0:40 }}{{ producto.descripcion.length > 40 ? '...' : '' }}
                 </span>
+              </td>
+              <td data-label="CATEGORÍA">
+                <span class="badge-categoria">{{ producto.categoryName }}</span>
               </td>
               <td data-label="COSTO">{{ producto.costoBs | number:'1.0-2' }}</td>
               <td data-label="PRECIO" class="price-cell">
@@ -401,6 +404,18 @@ interface Producto {
       font-family: var(--font-family-mono);
       font-weight: 600;
       font-size: 0.85rem;
+    }
+
+    /* ✅ NUEVO: Estilo para badge de categoría */
+    .badge-categoria {
+      display: inline-block;
+      padding: 6px 12px;
+      background-color: rgba(99, 102, 241, 0.1);
+      color: rgb(99, 102, 241);
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      font-size: 0.85rem;
+      white-space: nowrap;
     }
 
     .product-name {
@@ -741,6 +756,7 @@ export class ProductosComponent implements OnInit {
   filtroEstado = '';
   currentPage = 1;
   itemsPerPage = 10;
+  categoriasUnicas: string[] = []; // ✅ NUEVA: Categorías dinámicas
 
   constructor(
     private productosService: ProductosService,
@@ -766,6 +782,7 @@ export class ProductosComponent implements OnInit {
             codigo: p.codigo_producto,
             nombre: p.nombre,
             descripcion: p.descripcion || '',
+            categoryName: p.categoria?.nombre || 'Sin categoría', // ✅ Mapear categoría
             costoBs: p.precio_costo,
             precioBs: p.precio_venta,
             ganancia: p.precio_venta - p.precio_costo,
@@ -773,6 +790,9 @@ export class ProductosComponent implements OnInit {
             stock: p.stock_actual,
             estado: p.estado === 'ACTIVO'
           }));
+          
+          // ✅ NUEVA: Extraer categorías únicas para el filtro
+          this.categoriasUnicas = [...new Set(this.productos.map(p => p.categoryName))].sort();
           
           this.filtrar();
           this.cdr.markForCheck();
@@ -793,7 +813,10 @@ export class ProductosComponent implements OnInit {
         p.nombre.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         p.codigo.toLowerCase().includes(this.searchTerm.toLowerCase());
       
-      const matchCategoria = this.filtroCategoria === '';
+      // ✅ ARREGLADO: Comparar categoryName correctamente
+      const matchCategoria = this.filtroCategoria === '' || 
+        p.categoryName === this.filtroCategoria;
+      
       const matchEstado = this.filtroEstado === '' || 
         (this.filtroEstado === 'activo' ? p.estado : !p.estado);
       

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Categoria } from '../categorias/categoria.entity';
 
 @Entity('productos')
 export class Producto {
@@ -16,6 +17,11 @@ export class Producto {
 
   @Column({ name: 'categoria_id', type: 'uuid', nullable: false })
   categoria_id: string;
+
+  // Relación ManyToOne con Categoria
+  @ManyToOne(() => Categoria, { eager: false })
+  @JoinColumn({ name: 'categoria_id' })
+  categoria: Categoria;
 
   @Column({ name: 'precio_costo', type: 'numeric', precision: 10, scale: 2, transformer: { to: (v) => v, from: (v) => parseFloat(v) } })
   precio_costo: number;

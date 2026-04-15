@@ -68,22 +68,27 @@ export class ProductosService {
   }> {
     const skip = (page - 1) * limit;
 
-    const whereConditions: any = {};
+    const query = this.productosRepository.createQueryBuilder('p')
+      .leftJoinAndSelect('p.categoria', 'categoria');
 
+    // Aplicar filtros
     if (buscar) {
-      whereConditions.nombre = ILike(`%${buscar}%`);
+      query.where('p.nombre ILIKE :buscar OR p.codigo_producto ILIKE :buscar', { buscar: `%${buscar}%` });
     }
 
     if (estado) {
-      whereConditions.estado = estado;
+      query.andWhere('p.estado = :estado', { estado });
     }
 
-    const [data, total] = await this.productosRepository.findAndCount({
-      where: whereConditions,
-      order: { nombre: 'ASC' },
-      skip,
-      take: limit,
-    });
+    // Contar total antes de paginar
+    const total = await query.getCount();
+
+    // Aplicar paginación y ordenamiento
+    const data = await query
+      .orderBy('p.nombre', 'ASC')
+      .skip(skip)
+      .take(limit)
+      .getMany();
 
     return {
       data,
@@ -98,6 +103,7 @@ export class ProductosService {
     const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
     const producto = await this.productosRepository.findOne({
       where: { id: numericId },
+      relations: ['categoria'],
     });
 
     if (!producto) {
