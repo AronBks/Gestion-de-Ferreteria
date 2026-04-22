@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Usuario } from '../../usuarios/usuario.entity';
+import { DetalleVenta } from './detalle-venta.entity';
 
 export enum PaymentMethod {
   EFECTIVO = 'EFECTIVO',
@@ -90,4 +91,7 @@ export class Venta {
 
   @UpdateDateColumn({ name: 'fecha_actualizacion' })
   fechaActualizacion: Date;
+
+  @OneToMany(() => DetalleVenta, (detalle) => detalle.venta)
+  detalles: DetalleVenta[];
 }

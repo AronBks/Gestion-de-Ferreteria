@@ -10,7 +10,7 @@ export class DetalleVenta {
   @Column({ name: 'venta_id' })
   ventaId: string;
 
-  @ManyToOne(() => Venta)
+  @ManyToOne(() => Venta, (venta) => venta.detalles)
   @JoinColumn({ name: 'venta_id' })
   venta: Venta;
 

@@ -140,6 +140,15 @@ p, span, div {
   font-family: var(--font-family-body);
 }
 
+.material-icons {
+  font-family: 'Material Icons' !important;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+}
+
 code, pre {
   font-family: var(--font-family-mono);
   font-size: 0.875rem;

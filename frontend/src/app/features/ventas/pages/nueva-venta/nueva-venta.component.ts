@@ -96,25 +96,35 @@ export class NuevaVentaComponent {
   }
 
   ejecutarBusqueda(term: string) {
-    if (!term || term.trim() === '') {
+    if (!term || term.trim().length < 2) {
       this.resultados.set([]);
       return;
     }
     this.buscando.set(true);
-    this.productosService.obtenerProductos(1, 100).subscribe({
-      next: (res: any) => {
-        const searchLower = term.toLowerCase();
-        const filtered = (res.data || res).filter((p: any) => 
-          (p.nombre && p.nombre.toLowerCase().includes(searchLower)) || 
-          (p.codigoProducto && p.codigoProducto.toLowerCase().includes(searchLower)) ||
-          (p.codigo && p.codigo.toLowerCase().includes(searchLower))
-        );
-        filtered.sort((a: any, b: any) => {
-          const aStock = a.stockActual || a.stock_actual || 0;
-          const bStock = b.stockActual || b.stock_actual || 0;
-          return bStock - aStock;
+    
+    this.productosService.obtenerProductos(1, 1000).subscribe({
+      next: (res) => {
+        const data = res.data || [];
+        const searchLower = term.toLowerCase().trim();
+        
+        const filtered = data.filter((p: any) => {
+          const nombre = (p.nombre || '').toLowerCase();
+          const codigo = (p.codigo_producto || p.codigoProducto || '').toLowerCase();
+          
+          return nombre.includes(searchLower) || 
+                 codigo.includes(searchLower);
         });
-        this.resultados.set(filtered.slice(0, 15));
+
+        // Normalizar para la UI (camelCase) y ordenar por stock
+        const normalized = filtered.map((p: any) => ({
+          ...p,
+          codigoProducto: p.codigo_producto || p.codigoProducto,
+          stockActual: p.stock_actual !== undefined ? p.stock_actual : p.stockActual,
+          precioVenta: p.precio_venta !== undefined ? p.precio_venta : p.precioVenta
+        }));
+
+        normalized.sort((a: any, b: any) => (b.stockActual || 0) - (a.stockActual || 0));
+        this.resultados.set(normalized.slice(0, 15));
         this.buscando.set(false);
       },
       error: () => {
@@ -125,7 +135,8 @@ export class NuevaVentaComponent {
   }
 
   agregarAlCarrito(prod: any) {
-    if (prod.stockActual <= 0) {
+    const stock = prod.stockActual;
+    if (stock <= 0) {
       this.toast.showError(`Producto sin stock: ${prod.nombre}`);
       return;
     }
@@ -133,8 +144,8 @@ export class NuevaVentaComponent {
     this.carrito.update(items => {
       const existing = items.find(i => i.productoId === prod.id);
       if (existing) {
-        if (existing.cantidad >= existing.stockActual) {
-          this.toast.showWarning(`Stock máximo alcanzado para: ${prod.nombre}`);
+        if (existing.cantidad >= stock) {
+          this.toast.showWarning(`Stock máximo alcanzado (${stock})`);
           return items;
         }
         return items.map(i => i.productoId === prod.id ? { ...i, cantidad: i.cantidad + 1 } : i);
@@ -146,16 +157,21 @@ export class NuevaVentaComponent {
         precioUnitario: prod.precioVenta,
         cantidad: 1,
         descuentoItem: 0,
-        stockActual: prod.stockActual
+        stockActual: stock
       };
       
-      this.toast.showSuccess(`${prod.nombre} agregado`);
+      this.toast.showSuccess(`${prod.nombre} añadido`);
       return [...items, newItem];
     });
 
     this.searchTerm.set('');
     this.resultados.set([]);
-    document.getElementById('search-input')?.focus();
+    
+    // Enfocar de nuevo el input de búsqueda para rapidez
+    setTimeout(() => {
+      const input = document.getElementById('search-input') as HTMLInputElement;
+      if (input) input.focus();
+    }, 50);
   }
 
   cambiarCantidad(item: CartItem, delta: number) {

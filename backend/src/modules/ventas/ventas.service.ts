@@ -103,8 +103,11 @@ export class VentasService {
       const ventaGuardada = await queryRunner.manager.save(Venta, nuevaVenta);
 
       // Insertar detalles
-      const detalles = detallesToSave.map(item => ({ ...item, ventaId: ventaGuardada.id }));
-      await queryRunner.manager.insert(DetalleVenta, detalles);
+      const detalles = detallesToSave.map(item => queryRunner.manager.create(DetalleVenta, { 
+        ...item, 
+        ventaId: ventaGuardada.id 
+      }));
+      await queryRunner.manager.save(DetalleVenta, detalles);
 
       await queryRunner.commitTransaction();
       
@@ -115,7 +118,9 @@ export class VentasService {
       });
 
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      if (queryRunner.isTransactionActive) {
+        await queryRunner.rollbackTransaction();
+      }
       throw error;
     } finally {
       await queryRunner.release();

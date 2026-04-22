@@ -197,12 +197,16 @@
                   </span>
                 </td>
                 <td class="col-actions">
-                  <button class="btn-action btn-view" (click)="verDetalle(venta.id)" title="Ver Detalle">
-                    Ver
-                  </button>
-                  <button *ngIf="venta.estado !== 'CANCELADA'" class="btn-action btn-delete" (click)="confirmarCancelacion(venta)" title="Cancelar Venta">
-                    X
-                  </button>
+                  <div class="actions-group">
+                    <button class="btn-action btn-view" (click)="verDetalle(venta.id)" title="Ver Detalle">
+                      <span class="material-icons">visibility</span>
+                      Ver detalle
+                    </button>
+                    <button *ngIf="venta.estado !== 'CANCELADA'" class="btn-action btn-delete" (click)="confirmarCancelacion(venta)" title="Cancelar Venta">
+                      <span class="material-icons">cancel</span>
+                      Anular
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
