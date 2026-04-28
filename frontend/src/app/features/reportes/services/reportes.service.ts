@@ -14,4 +14,8 @@ export class ReportesService {
   getDashboard(dias: number = 30): Observable<DashboardResponse> {
     return this.http.get<DashboardResponse>(`${this.apiUrl}/dashboard?dias=${dias}`);
   }
+
+  getApiUrl(): string {
+    return this.apiUrl;
+  }
 }
