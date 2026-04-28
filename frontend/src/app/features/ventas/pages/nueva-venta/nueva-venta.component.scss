@@ -467,7 +467,7 @@ $transition: all 0.2s ease-in-out;
   position: relative;
   margin-top: 4px;
   display: flex;
-  align-items: center;
+  align-items: stretch; // Importante para que el prefijo y el input midan lo mismo
   background: var(--color-bg-tertiary);
   border: 2px solid var(--color-border);
   border-radius: $radius-md;
@@ -481,19 +481,21 @@ $transition: all 0.2s ease-in-out;
   }
   
   .prefix { 
+    flex-shrink: 0; // Evita que desaparezca al escribir números grandes
     padding: 0 16px;
     font-weight: 800; 
     color: var(--color-accent-primary); 
     font-size: 20px;
     border-right: 1px solid var(--color-border);
     background: rgba(245, 158, 11, 0.05);
-    height: 100%;
     display: flex;
     align-items: center;
+    justify-content: center;
   }
   
   input.big-input {
     flex: 1;
+    min-width: 0; // Permite que el input se ajuste sin empujar el prefijo
     padding: 14px 16px;
     font-size: 24px;
     text-align: right;

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, effect } from '@angular/core';
+import { Component, inject, signal, computed, effect, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -33,6 +33,7 @@ export class NuevaVentaComponent {
   private toast = inject(ToastService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private zone = inject(NgZone);
 
   now = signal(new Date());
 
@@ -82,11 +83,19 @@ export class NuevaVentaComponent {
       this.ejecutarBusqueda(term);
     });
 
+    // Seteamos el monto inicial cuando cambia el total o el método de pago
+    // Pero NO forzamos mientras el usuario escribe, para evitar saltos molestos.
     effect(() => {
       const tot = this.total();
-      if (this.metodoPago() === 'EFECTIVO' && this.montoPagado() < tot) {
-        this.montoPagado.set(tot);
-      }
+      const metodo = this.metodoPago();
+      
+      this.zone.run(() => {
+        if (metodo !== 'EFECTIVO') {
+          this.montoPagado.set(tot);
+        } else if (this.montoPagado() === 0) {
+          this.montoPagado.set(tot);
+        }
+      });
     }, { allowSignalWrites: true });
   }
 
