@@ -27,6 +27,11 @@ export class AuthService {
       throw new UnauthorizedException('Email o contraseña incorrectos');
     }
 
+    // Verificar estado del usuario (No permitir ingreso a suspendidos)
+    if (usuario.estado !== 'ACTIVO') {
+      throw new UnauthorizedException('Tu cuenta ha sido suspendida. Contacta al administrador.');
+    }
+
     // Generar JWT
     const payload = {
       id: usuario.id,

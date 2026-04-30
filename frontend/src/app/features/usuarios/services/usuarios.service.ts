@@ -34,7 +34,7 @@ export class UsuariosService {
   }
 
   resetPassword(id: string): Observable<{ temporal: string }> {
-    return this.http.patch<{ temporal: string }>(`${this.apiUrl}/${id}/password`, {});
+    return this.http.post<{ temporal: string }>(`${this.apiUrl}/${id}/reset-password`, {});
   }
 
   remove(id: string): Observable<void> {
