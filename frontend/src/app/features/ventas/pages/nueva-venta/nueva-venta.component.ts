@@ -8,6 +8,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { CreateVentaPayload, PaymentMethod } from '../../models/venta.model';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { FacturaModalComponent } from '../../../../shared/components/factura-modal/factura-modal.component';
 
 interface CartItem {
   productoId: number;
@@ -23,7 +24,7 @@ interface CartItem {
 @Component({
   selector: 'app-nueva-venta',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FacturaModalComponent],
   templateUrl: './nueva-venta.component.html',
   styleUrls: ['./nueva-venta.component.scss']
 })
@@ -57,6 +58,8 @@ export class NuevaVentaComponent {
   resultados = signal<any[]>([]);
   buscando = signal<boolean>(false);
   processing = signal<boolean>(false);
+  showFacturaModal = signal<boolean>(false);
+  facturaData = signal<any>(null);
 
   clienteNombre = '';
   clienteDocumento = '';
@@ -265,17 +268,8 @@ export class NuevaVentaComponent {
       next: (res: any) => {
         this.toast.showSuccess(`✓ Venta completada: ${res.numeroVenta}`);
         this.processing.set(false);
-        
-        setTimeout(() => {
-          this.carrito.set([]);
-          this.montoPagado.set(0);
-          this.descuentoGlobal.set(0);
-          this.clienteNombre = '';
-          this.clienteDocumento = '';
-          this.numeroReferencia = '';
-          this.metodoPago.set('EFECTIVO');
-          this.router.navigate(['..'], { relativeTo: this.route });
-        }, 1000);
+        this.facturaData.set(res);
+        this.showFacturaModal.set(true);
       },
       error: (err: any) => {
         this.processing.set(false);
@@ -283,5 +277,17 @@ export class NuevaVentaComponent {
         this.toast.showError(`Error: ${mensaje}`);
       }
     });
+  }
+
+  cerrarFactura(): void {
+    this.showFacturaModal.set(false);
+    this.facturaData.set(null);
+    this.carrito.set([]);
+    this.montoPagado.set(0);
+    this.descuentoGlobal.set(0);
+    this.clienteNombre = '';
+    this.clienteDocumento = '';
+    this.numeroReferencia = '';
+    this.metodoPago.set('EFECTIVO');
   }
 }

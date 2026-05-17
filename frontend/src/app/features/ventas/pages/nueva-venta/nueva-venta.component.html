@@ -245,5 +245,10 @@
       </section>
     </div>
   </main>
-</div>
 
+  <app-factura-modal
+    [isOpen]="showFacturaModal()"
+    [facturaData]="facturaData()"
+    (close)="cerrarFactura()">
+  </app-factura-modal>
+</div>

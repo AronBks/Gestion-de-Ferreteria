@@ -1,0 +1,112 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <h2 class="modal-title">Comprobante de Venta</h2>
+      <button class="btn-close" (click)="onClose()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body" id="factura-print-area">
+      <!-- Encabezado Factura -->
+      <div class="factura-header">
+        <div class="company-info">
+          <div class="company-logo">
+            <span class="material-icons">handyman</span>
+          </div>
+          <h3>{{ ferreteriaData.nombre }}</h3>
+          <p>{{ ferreteriaData.direccion }}</p>
+          <p>Tel: {{ ferreteriaData.telefono }} | NIT: {{ ferreteriaData.nit }}</p>
+        </div>
+        
+        <div class="invoice-details">
+          <div class="invoice-badge">
+            {{ facturaData?.tipoComprobante || 'FACTURA' }}
+          </div>
+          <p><strong>N°:</strong> {{ facturaData?.numeroVenta }}</p>
+          <p><strong>Fecha:</strong> {{ facturaData?.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</p>
+          <p><strong>Método de Pago:</strong> {{ facturaData?.metodoPago }}</p>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Datos del Cliente -->
+      <div class="client-info">
+        <div class="info-group">
+          <span class="label">Razón Social:</span>
+          <span class="value">{{ facturaData?.clienteNombre || 'Consumidor Final' }}</span>
+        </div>
+        <div class="info-group">
+          <span class="label">CI/NIT:</span>
+          <span class="value">{{ facturaData?.clienteDocumento || '0' }}</span>
+        </div>
+      </div>
+
+      <!-- Detalle de Productos -->
+      <div class="items-table-container">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>CANT</th>
+              <th>DESCRIPCIÓN</th>
+              <th class="text-right">P. UNIT.</th>
+              <th class="text-right">SUBTOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of facturaData?.detalles">
+              <td>{{ item.cantidad }}</td>
+              <td>{{ item.producto?.nombre || 'Producto' }}</td>
+              <td class="text-right">Bs. {{ item.precioUnitario | number:'1.2-2' }}</td>
+              <td class="text-right">Bs. {{ item.subtotal | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Resumen Financiero -->
+      <div class="financial-summary">
+        <div class="summary-row">
+          <span>Subtotal:</span>
+          <span>Bs. {{ facturaData?.subtotal | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-row discount" *ngIf="facturaData?.descuentoTotal > 0">
+          <span>Descuento:</span>
+          <span>- Bs. {{ facturaData?.descuentoTotal | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-row total">
+          <span>TOTAL A PAGAR:</span>
+          <span>Bs. {{ facturaData?.total | number:'1.2-2' }}</span>
+        </div>
+        
+        <div class="payment-info">
+          <div class="summary-row">
+            <span>Monto Pagado:</span>
+            <span>Bs. {{ facturaData?.montoPagado | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row change">
+            <span>Vuelto:</span>
+            <span>Bs. {{ facturaData?.vuelto | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="factura-footer">
+        <p>¡Gracias por su preferencia!</p>
+        <p class="small-text">Este comprobante es un documento contable interno.</p>
+      </div>
+
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="onClose()">Cerrar</button>
+      <button class="btn-primary" (click)="printFactura()">
+        <span class="material-icons">print</span>
+        Imprimir Recibo
+      </button>
+    </div>
+
+  </div>
+</div>
