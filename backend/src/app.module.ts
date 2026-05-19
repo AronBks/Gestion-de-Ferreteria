@@ -10,6 +10,7 @@ import { CategoriasModule } from './modules/categorias/categorias.module';
 import { ProductosModule } from './modules/productos/productos.module';
 import { VentasModule } from './modules/ventas/ventas.module';
 import { ReportesModule } from './modules/reportes/reportes.module';
+import { FacturacionModule } from './modules/facturacion/facturacion.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ReportesModule } from './modules/reportes/reportes.module';
     ProductosModule,
     VentasModule,
     ReportesModule,
+    FacturacionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

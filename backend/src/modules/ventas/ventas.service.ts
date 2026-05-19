@@ -85,6 +85,7 @@ export class VentasService {
       const nuevaVenta = queryRunner.manager.create(Venta, {
         clienteNombre: createVentaDto.clienteNombre,
         clienteDocumento: createVentaDto.clienteDocumento,
+        clienteTelefono: createVentaDto.clienteTelefono,
         tipoComprobante: createVentaDto.tipoComprobante,
         numeroVenta,
         vendedorId: userId,
@@ -114,7 +115,7 @@ export class VentasService {
       // Retornar venta con relaciones
       return await this.ventaRepository.findOne({
         where: { id: ventaGuardada.id },
-        relations: ['vendedor', 'detalles']
+        relations: ['vendedor', 'detalles', 'detalles.producto']
       });
 
     } catch (error) {
@@ -128,10 +129,11 @@ export class VentasService {
   }
 
   async findAll(filterDto: FilterVentasDto) {
-    const { fechaInicio, fechaFin, estado, vendedorId, metodoPago, page = 1, limit = 10 } = filterDto;
+    const { fechaInicio, fechaFin, estado, vendedorId, metodoPago, estadoFactura, page = 1, limit = 10 } = filterDto;
     
     const query = this.ventaRepository.createQueryBuilder('venta')
       .leftJoinAndSelect('venta.vendedor', 'vendedor')
+      .leftJoinAndSelect('venta.factura', 'factura')
       .orderBy('venta.fechaVenta', 'DESC');
 
     if (estado) query.andWhere('venta.estado = :estado', { estado });
@@ -140,6 +142,15 @@ export class VentasService {
     
     if (fechaInicio) query.andWhere('venta.fechaVenta >= :fechaInicio', { fechaInicio });
     if (fechaFin) query.andWhere('venta.fechaVenta <= :fechaFin', { fechaFin });
+
+    // Filtro por estado de factura SIAT
+    if (estadoFactura) {
+      if (estadoFactura === 'SIN_FACTURA') {
+        query.andWhere('factura.id IS NULL');
+      } else {
+        query.andWhere('factura.estadoSiat = :estadoFactura', { estadoFactura });
+      }
+    }
 
     const [data, total] = await query
       .skip((page - 1) * limit)

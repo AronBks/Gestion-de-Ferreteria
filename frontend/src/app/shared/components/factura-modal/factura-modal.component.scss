@@ -1,357 +1,671 @@
+// ============================================================================
+// FACTURA MODAL — Ticket/Recibo Profesional SIAT
+// ============================================================================
+
+$bg-ticket: #1a1a2e;
+$bg-ticket-header: #0f0f1e;
+$bg-section: rgba(22, 33, 62, 0.4);
+$border: #3d3d5c;
+$border-light: rgba(61, 61, 92, 0.4);
+$text-primary: #ffffff;
+$text-secondary: #b0b0cc;
+$text-tertiary: #808094;
+$accent: #F59E0B;
+$accent-dark: #d97706;
+$success: #51cf66;
+$danger: #ff6b6b;
+$whatsapp: #25D366;
+$whatsapp-dark: #1DA851;
+
+// ============================================================================
+// OVERLAY
+// ============================================================================
+
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  padding: 1rem;
 }
 
 .modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
+  background: $bg-ticket;
+  border: 1px solid $border;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: slideIn 0.3s ease-out;
-
-  .dark & {
-    background: #1f2937;
-    color: #f3f4f6;
-  }
+  overflow: hidden;
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+  animation: ticketSlide 0.35s ease-out;
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes ticketSlide {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid #e5e7eb;
+// ============================================================================
+// HEADER DEL TICKET
+// ============================================================================
 
-  .dark & {
-    border-color: #374151;
-  }
-
-  .modal-title {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #111827;
-
-    .dark & {
-      color: #f9fafb;
-    }
-  }
+.ticket-header {
+  background: $bg-ticket-header;
+  padding: 1.5rem 1.75rem;
+  text-align: center;
+  position: relative;
+  border-bottom: 1px solid $border;
 
   .btn-close {
-    background: none;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: transparent;
     border: none;
+    color: $text-tertiary;
     cursor: pointer;
-    color: #6b7280;
-    padding: 4px;
-    display: flex;
-    align-items: center;
+    padding: 0.25rem;
     border-radius: 50%;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background-color: #f3f4f6;
-      color: #111827;
-
-      .dark & {
-        background-color: #374151;
-        color: #f9fafb;
-      }
-    }
-  }
-}
-
-.modal-body {
-  padding: 24px;
-  overflow-y: auto;
-  font-family: 'Inter', system-ui, sans-serif;
-  color: #374151;
-
-  .dark & {
-    color: #d1d5db;
-  }
-}
-
-.factura-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-
-  .company-info {
-    .company-logo {
-      color: var(--color-primary, #f59e0b);
-      margin-bottom: 8px;
-      .material-icons {
-        font-size: 32px;
-      }
-    }
-    h3 {
-      margin: 0 0 4px 0;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #111827;
-      .dark & { color: #f9fafb; }
-    }
-    p {
-      margin: 2px 0;
-      font-size: 0.85rem;
-      color: #6b7280;
-      .dark & { color: #9ca3af; }
-    }
-  }
-
-  .invoice-details {
-    text-align: right;
-    
-    .invoice-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      background-color: #f3f4f6;
-      color: #4b5563;
-      font-weight: 700;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      margin-bottom: 8px;
-      letter-spacing: 1px;
-      
-      .dark & {
-        background-color: #374151;
-        color: #d1d5db;
-      }
-    }
-
-    p {
-      margin: 4px 0;
-      font-size: 0.85rem;
-    }
-  }
-}
-
-.divider {
-  border: 0;
-  border-top: 1px dashed #d1d5db;
-  margin: 16px 0;
-  
-  .dark & {
-    border-color: #4b5563;
-  }
-}
-
-.client-info {
-  margin-bottom: 20px;
-  padding: 12px;
-  background-color: #f9fafb;
-  border-radius: 8px;
-
-  .dark & {
-    background-color: #374151;
-  }
-
-  .info-group {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 4px;
-    font-size: 0.9rem;
-
-    .label {
-      color: #6b7280;
-      .dark & { color: #9ca3af; }
-    }
-    .value {
-      font-weight: 600;
-      color: #111827;
-      .dark & { color: #f9fafb; }
-    }
-  }
-}
-
-.items-table-container {
-  margin-bottom: 20px;
-
-  .items-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-
-    th {
-      text-align: left;
-      padding: 8px 4px;
-      color: #6b7280;
-      border-bottom: 1px solid #d1d5db;
-      font-weight: 600;
-
-      .dark & {
-        color: #9ca3af;
-        border-color: #4b5563;
-      }
-    }
-
-    td {
-      padding: 8px 4px;
-      border-bottom: 1px solid #e5e7eb;
-
-      .dark & {
-        border-color: #374151;
-      }
-    }
-
-    .text-right {
-      text-align: right;
-    }
-  }
-}
-
-.financial-summary {
-  margin-bottom: 24px;
-  padding-left: 40%;
-
-  .summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-    font-size: 0.9rem;
-
-    &.discount {
-      color: #059669;
-      .dark & { color: #34d399; }
-    }
-
-    &.total {
-      font-size: 1.1rem;
-      font-weight: 700;
-      border-top: 2px solid #111827;
-      padding-top: 8px;
-      margin-top: 4px;
-
-      .dark & {
-        border-color: #f9fafb;
-      }
-    }
-  }
-
-  .payment-info {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px dashed #d1d5db;
-
-    .dark & {
-      border-color: #4b5563;
-    }
-
-    .change {
-      font-weight: 600;
-    }
-  }
-}
-
-.factura-footer {
-  text-align: center;
-  margin-top: 24px;
-
-  p {
-    margin: 4px 0;
-    font-weight: 600;
-  }
-
-  .small-text {
-    font-size: 0.75rem;
-    color: #9ca3af;
-    font-weight: normal;
-  }
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 24px;
-  background-color: #f9fafb;
-  border-top: 1px solid #e5e7eb;
-  border-radius: 0 0 12px 12px;
-
-  .dark & {
-    background-color: #1f2937;
-    border-color: #374151;
-  }
-
-  button {
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 500;
-    font-size: 0.9rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
     transition: all 0.2s;
 
-    &.btn-secondary {
-      background: white;
-      border: 1px solid #d1d5db;
-      color: #374151;
-
-      &:hover { background: #f3f4f6; }
-
-      .dark & {
-        background: #374151;
-        border-color: #4b5563;
-        color: #f9fafb;
-
-        &:hover { background: #4b5563; }
-      }
+    &:hover {
+      background: rgba(255, 107, 107, 0.1);
+      color: $danger;
     }
+  }
+}
 
-    &.btn-primary {
-      background: var(--color-primary, #f59e0b);
-      border: 1px solid var(--color-primary, #f59e0b);
-      color: white;
+.ticket-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
 
-      &:hover {
-        background: var(--color-primary-dark, #d97706);
+  .material-icons { font-size: 0.9rem; }
+
+  &.pendiente {
+    background: rgba(245, 158, 11, 0.1);
+    color: $accent;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  &.emitida {
+    background: rgba(81, 207, 102, 0.1);
+    color: $success;
+    border: 1px solid rgba(81, 207, 102, 0.3);
+    animation: badgePulse 2s ease-in-out;
+  }
+}
+
+@keyframes badgePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(81, 207, 102, 0.4); }
+  50%  { box-shadow: 0 0 0 10px rgba(81, 207, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(81, 207, 102, 0); }
+}
+
+.company-section {
+  .company-logo {
+    width: 56px;
+    height: 56px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 2px solid rgba(245, 158, 11, 0.3);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+
+    .material-icons {
+      font-size: 1.75rem;
+      color: $accent;
+    }
+  }
+
+  .company-name {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: $text-primary;
+    letter-spacing: 2px;
+  }
+
+  .company-address, .company-contact, .company-city {
+    margin: 0.15rem 0;
+    font-size: 0.75rem;
+    color: $text-tertiary;
+    font-weight: 400;
+  }
+}
+
+// ============================================================================
+// BODY DEL TICKET
+// ============================================================================
+
+.ticket-body {
+  padding: 1.25rem 1.75rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+// --- Info Grid ---
+
+.ticket-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  .info-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: $text-tertiary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .info-value {
+    font-size: 0.85rem;
+    color: $text-primary;
+    font-weight: 600;
+
+    &.mono { font-family: 'Fira Code', 'Consolas', monospace; }
+    &.highlight { color: $accent; font-size: 1.1rem; }
+  }
+}
+
+// --- SIAT Section ---
+
+.siat-section {
+  background: rgba(81, 207, 102, 0.04);
+  border: 1px solid rgba(81, 207, 102, 0.15);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  animation: siatFadeIn 0.5s ease-out 0.3s both;
+
+  .siat-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: $success;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.6rem;
+
+    .material-icons { font-size: 1rem; }
+  }
+}
+
+@keyframes siatFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.siat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+
+  .siat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+
+    &:first-child { grid-column: 1 / -1; }
+  }
+
+  .siat-label {
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: $text-tertiary;
+    letter-spacing: 0.5px;
+  }
+
+  .siat-value {
+    font-size: 0.78rem;
+    color: $text-primary;
+    font-weight: 500;
+
+    &.mono {
+      font-family: 'Fira Code', 'Consolas', monospace;
+      font-size: 0.7rem;
+      color: $text-secondary;
+      word-break: break-all;
+    }
+  }
+}
+
+// --- Divider ---
+
+.ticket-divider {
+  border: 0;
+  border-top: 1px dashed rgba(61, 61, 92, 0.5);
+  margin: 0.75rem 0;
+}
+
+// --- Client Section ---
+
+.client-section {
+  background: $bg-section;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+
+  .client-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+
+    .client-label {
+      font-size: 0.78rem;
+      color: $text-tertiary;
+    }
+    .client-value {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: $text-primary;
+
+      &.mono {
+        font-family: 'Fira Code', 'Consolas', monospace;
+        font-size: 0.8rem;
       }
     }
   }
 }
 
-/* Print Styles */
+// --- Products Table ---
+
+.products-section {
+  margin: 0;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    border-bottom: 1px solid $border;
+
+    th {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: $text-tertiary;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.5rem 0.25rem;
+      text-align: left;
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid $border-light;
+
+    &:last-child { border-bottom: none; }
+
+    td {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.82rem;
+      color: $text-primary;
+    }
+  }
+
+  .col-cant { width: 40px; text-align: center; color: $accent; font-weight: 700; }
+  .col-desc { font-weight: 500; }
+  .col-price, .col-sub { white-space: nowrap; }
+  .text-right { text-align: right !important; }
+}
+
+// --- Financial Summary ---
+
+.financial-section {
+  padding-left: 40%;
+
+  .fin-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    font-size: 0.85rem;
+    color: $text-secondary;
+
+    &.discount { color: $success; }
+
+    &.total-row {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: $accent;
+      border-top: 2px solid $accent;
+      padding-top: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    &.payment-row {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed $border-light;
+    }
+
+    &.change-row {
+      font-weight: 700;
+      color: $success;
+    }
+  }
+}
+
+// --- Leyenda SIAT ---
+
+.leyenda-siat {
+  margin-top: 1rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(245, 158, 11, 0.04);
+  border-left: 3px solid rgba(245, 158, 11, 0.3);
+  border-radius: 4px;
+
+  p {
+    margin: 0;
+    font-size: 0.7rem;
+    color: $text-tertiary;
+    font-style: italic;
+    line-height: 1.4;
+  }
+}
+
+// --- Footer Text ---
+
+.ticket-footer-text {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed $border-light;
+
+  .thanks-msg {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 0.25rem;
+  }
+
+  .legal-text {
+    font-size: 0.65rem;
+    color: $text-tertiary;
+    margin: 0;
+  }
+}
+
+// ============================================================================
+// ACCIONES DEL TICKET
+// ============================================================================
+
+.ticket-actions {
+  padding: 1rem 1.75rem 1.25rem;
+  border-top: 1px solid $border;
+  background: rgba(15, 15, 30, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+// Botón principal — Emitir Factura
+.btn-emit {
+  width: 100%;
+  padding: 0.85rem;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, $accent, $accent-dark);
+  color: #000;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+
+  .material-icons { font-size: 1.2rem; }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Botón secundario — Cerrar
+.btn-secondary-ticket {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid $border;
+  border-radius: 10px;
+  background: transparent;
+  color: $text-secondary;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+
+  .material-icons { font-size: 1rem; }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: $text-tertiary;
+  }
+}
+
+// --- Acciones post-emisión ---
+
+.actions-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-whatsapp {
+  flex: 1;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 10px;
+  background: $whatsapp;
+  color: white;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+
+  .material-icons { font-size: 1rem; }
+  &:hover { background: $whatsapp-dark; transform: translateY(-2px); }
+}
+
+.btn-print {
+  padding: 0.7rem 1rem;
+  border: 1px solid $border;
+  border-radius: 10px;
+  background: transparent;
+  color: $text-secondary;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+
+  .material-icons { font-size: 1rem; }
+  &:hover { background: rgba(255, 255, 255, 0.03); border-color: $text-tertiary; }
+}
+
+.btn-new-sale {
+  width: 100%;
+  padding: 0.7rem;
+  border: 2px solid $accent;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.05);
+  color: $accent;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+
+  .material-icons { font-size: 1.1rem; }
+
+  &:hover {
+    background: rgba(245, 158, 11, 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+// --- WhatsApp Input Section ---
+
+.whatsapp-section {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); max-height: 0; }
+  to   { opacity: 1; transform: translateY(0); max-height: 60px; }
+}
+
+.whatsapp-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+
+  .input-with-prefix {
+    flex: 1;
+    display: flex;
+    border: 1px solid $border;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+
+    &:focus-within {
+      border-color: $whatsapp;
+      box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+    }
+
+    .prefix {
+      display: flex;
+      align-items: center;
+      padding: 0 0.6rem;
+      background: rgba(37, 211, 102, 0.08);
+      color: $whatsapp;
+      font-weight: 700;
+      font-size: 0.8rem;
+      border-right: 1px solid $border;
+    }
+
+    .tel-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: $text-primary;
+      padding: 0.6rem;
+      font-size: 0.9rem;
+      outline: none;
+    }
+  }
+
+  .btn-wa-send {
+    width: 44px;
+    border: none;
+    border-radius: 10px;
+    background: $whatsapp;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    .material-icons { font-size: 1.1rem; }
+
+    &:hover:not(:disabled) { background: $whatsapp-dark; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
+
+// ============================================================================
+// ANIMACIONES
+// ============================================================================
+
+.spin {
+  animation: spinAnim 1s linear infinite;
+}
+
+@keyframes spinAnim {
+  to { transform: rotate(360deg); }
+}
+
+// ============================================================================
+// PRINT STYLES
+// ============================================================================
+
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  #factura-print-area, #factura-print-area * {
-    visibility: visible;
-  }
+  body * { visibility: hidden; }
+  #factura-print-area, #factura-print-area * { visibility: visible; }
   #factura-print-area {
     position: absolute;
-    left: 0;
-    top: 0;
+    left: 0; top: 0;
     width: 100%;
     padding: 20px;
     color: black !important;
+    background: white !important;
   }
-  .modal-overlay {
-    background: white;
-  }
-  .modal-actions {
-    display: none !important;
-  }
+  .modal-overlay { background: white; }
+  .ticket-header, .ticket-actions { display: none !important; }
+  .siat-section { border-color: #ccc; }
+}
+
+// ============================================================================
+// RESPONSIVE
+// ============================================================================
+
+@media (max-width: 560px) {
+  .modal-content { max-width: 100%; border-radius: 12px; }
+  .ticket-header { padding: 1rem 1.25rem; }
+  .ticket-body { padding: 1rem 1.25rem; }
+  .ticket-actions { padding: 0.75rem 1.25rem 1rem; }
+  .ticket-info-grid { grid-template-columns: 1fr; }
+  .financial-section { padding-left: 30%; }
 }

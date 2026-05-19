@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Venta, CreateVentaPayload } from '../models/venta.model';
+import { Venta, CreateVentaPayload, PaginatedResponse } from '../models/venta.model';
 
 @Injectable({
   providedIn: 'root'
@@ -14,16 +14,16 @@ export class VentasService {
     return this.http.post<Venta>(this.apiUrl, payload);
   }
 
-  findAll(filters?: any): Observable<any> {
+  findAll(filters?: Record<string, any>): Observable<PaginatedResponse<Venta>> {
     let params = new HttpParams();
     if (filters) {
       Object.keys(filters).forEach(key => {
-        if (filters[key]) {
+        if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
           params = params.set(key, filters[key]);
         }
       });
     }
-    return this.http.get<any>(this.apiUrl, { params });
+    return this.http.get<PaginatedResponse<Venta>>(this.apiUrl, { params });
   }
 
   findOne(id: string): Observable<Venta> {

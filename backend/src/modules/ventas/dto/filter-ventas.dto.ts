@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsEnum, IsDateString } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsDateString, IsNumber, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 import { SaleStatus, PaymentMethod } from '../entities/venta.entity';
 
 export class FilterVentasDto {
@@ -23,8 +24,18 @@ export class FilterVentasDto {
   metodoPago?: PaymentMethod;
 
   @IsOptional()
-  page?: number;
+  @IsString()
+  estadoFactura?: string; // EstadoSiat: EMITIDA, ANULADA, RECHAZADA, PENDIENTE, OBSERVADA
 
   @IsOptional()
-  limit?: number;
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  limit?: number = 10;
 }

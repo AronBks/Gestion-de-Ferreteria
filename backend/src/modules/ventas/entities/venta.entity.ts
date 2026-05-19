@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Usuario } from '../../usuarios/usuario.entity';
 import { DetalleVenta } from './detalle-venta.entity';
+import { Factura } from '../../facturacion/entities/factura.entity';
 
 export enum PaymentMethod {
   EFECTIVO = 'EFECTIVO',
@@ -36,6 +37,9 @@ export class Venta {
 
   @Column({ name: 'cliente_documento', length: 20, nullable: true })
   clienteDocumento: string;
+
+  @Column({ name: 'cliente_telefono', length: 20, nullable: true })
+  clienteTelefono: string;
 
   @CreateDateColumn({ name: 'fecha_venta' })
   fechaVenta: Date;
@@ -94,4 +98,7 @@ export class Venta {
 
   @OneToMany(() => DetalleVenta, (detalle) => detalle.venta)
   detalles: DetalleVenta[];
+
+  @OneToOne(() => Factura, (factura) => factura.venta)
+  factura: Factura;
 }

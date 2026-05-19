@@ -29,6 +29,10 @@ export class CreateVentaDto {
   @IsString()
   clienteDocumento?: string;
 
+  @IsOptional()
+  @IsString()
+  clienteTelefono?: string;
+
   @IsString()
   tipoComprobante: 'FACTURA' | 'BOLETA' | 'TICKET';
 

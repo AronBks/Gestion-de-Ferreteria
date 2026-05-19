@@ -63,6 +63,7 @@ export class NuevaVentaComponent {
 
   clienteNombre = '';
   clienteDocumento = '';
+  clienteTelefono = '';
   numeroReferencia = '';
   editarDescGlobal = false;
 
@@ -251,6 +252,7 @@ export class NuevaVentaComponent {
     const payload: CreateVentaPayload = {
       clienteNombre: this.clienteNombre?.trim() || 'Cliente General',
       clienteDocumento: this.clienteDocumento?.trim() || undefined,
+      clienteTelefono: this.clienteTelefono?.trim() || undefined,
       tipoComprobante: 'FACTURA',
       metodoPago: this.metodoPago(),
       montoPagado: this.montoPagado(),
@@ -282,12 +284,24 @@ export class NuevaVentaComponent {
   cerrarFactura(): void {
     this.showFacturaModal.set(false);
     this.facturaData.set(null);
+  }
+
+  iniciarNuevaVenta(): void {
+    this.showFacturaModal.set(false);
+    this.facturaData.set(null);
     this.carrito.set([]);
     this.montoPagado.set(0);
     this.descuentoGlobal.set(0);
     this.clienteNombre = '';
     this.clienteDocumento = '';
+    this.clienteTelefono = '';
     this.numeroReferencia = '';
     this.metodoPago.set('EFECTIVO');
+
+    // Enfocar búsqueda para rapidez
+    setTimeout(() => {
+      const input = document.getElementById('search-input') as HTMLInputElement;
+      if (input) input.focus();
+    }, 100);
   }
 }

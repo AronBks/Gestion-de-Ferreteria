@@ -1,52 +1,102 @@
 <div class="modal-overlay" *ngIf="isOpen" (click)="onClose()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    
-    <div class="modal-header">
-      <h2 class="modal-title">Comprobante de Venta</h2>
+
+    <!-- ================================================================ -->
+    <!-- HEADER DEL TICKET                                                -->
+    <!-- ================================================================ -->
+    <div class="ticket-header">
       <button class="btn-close" (click)="onClose()">
         <span class="material-icons">close</span>
       </button>
+
+      <!-- Badge de estado -->
+      <div class="ticket-status-badge" [class.emitida]="emisionExitosa" [class.pendiente]="!emisionExitosa">
+        <span class="material-icons">{{ emisionExitosa ? 'verified' : 'receipt_long' }}</span>
+        {{ emisionExitosa ? 'FACTURA ELECTRÓNICA EMITIDA' : 'COMPROBANTE DE VENTA' }}
+      </div>
+
+      <div class="company-section">
+        <div class="company-logo">
+          <span class="material-icons">hardware</span>
+        </div>
+        <h2 class="company-name">{{ ferreteriaData.nombre }}</h2>
+        <p class="company-address">{{ ferreteriaData.direccion }}</p>
+        <p class="company-contact">Tel: {{ ferreteriaData.telefono }} · NIT: {{ ferreteriaData.nit }}</p>
+        <p class="company-city">{{ ferreteriaData.ciudad }}</p>
+      </div>
     </div>
 
-    <div class="modal-body" id="factura-print-area">
-      <!-- Encabezado Factura -->
-      <div class="factura-header">
-        <div class="company-info">
-          <div class="company-logo">
-            <span class="material-icons">handyman</span>
-          </div>
-          <h3>{{ ferreteriaData.nombre }}</h3>
-          <p>{{ ferreteriaData.direccion }}</p>
-          <p>Tel: {{ ferreteriaData.telefono }} | NIT: {{ ferreteriaData.nit }}</p>
+    <!-- ================================================================ -->
+    <!-- BODY DEL TICKET                                                  -->
+    <!-- ================================================================ -->
+    <div class="ticket-body" id="factura-print-area">
+
+      <!-- Datos de la Venta -->
+      <div class="ticket-info-grid">
+        <div class="info-item">
+          <span class="info-label">Nº VENTA</span>
+          <span class="info-value mono">{{ facturaData?.numeroVenta }}</span>
         </div>
-        
-        <div class="invoice-details">
-          <div class="invoice-badge">
-            {{ facturaData?.tipoComprobante || 'FACTURA' }}
-          </div>
-          <p><strong>N°:</strong> {{ facturaData?.numeroVenta }}</p>
-          <p><strong>Fecha:</strong> {{ facturaData?.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</p>
-          <p><strong>Método de Pago:</strong> {{ facturaData?.metodoPago }}</p>
+        <div class="info-item">
+          <span class="info-label">FECHA</span>
+          <span class="info-value">{{ facturaData?.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">MÉTODO DE PAGO</span>
+          <span class="info-value">{{ facturaData?.metodoPago }}</span>
+        </div>
+        <div class="info-item" *ngIf="emisionExitosa && facturaEmitida">
+          <span class="info-label">Nº FACTURA</span>
+          <span class="info-value highlight">{{ facturaEmitida.numeroFactura }}</span>
         </div>
       </div>
 
-      <hr class="divider">
-
-      <!-- Datos del Cliente -->
-      <div class="client-info">
-        <div class="info-group">
-          <span class="label">Razón Social:</span>
-          <span class="value">{{ facturaData?.clienteNombre || 'Consumidor Final' }}</span>
+      <!-- Datos Fiscales SIAT (solo si factura emitida) -->
+      <div class="siat-section" *ngIf="emisionExitosa && facturaEmitida">
+        <div class="siat-header">
+          <span class="material-icons">qr_code_2</span>
+          DATOS FISCALES SIAT
         </div>
-        <div class="info-group">
-          <span class="label">CI/NIT:</span>
-          <span class="value">{{ facturaData?.clienteDocumento || '0' }}</span>
+        <div class="siat-grid">
+          <div class="siat-item">
+            <span class="siat-label">CUF</span>
+            <span class="siat-value mono">{{ cufCorto }}</span>
+          </div>
+          <div class="siat-item">
+            <span class="siat-label">CÓD. CONTROL</span>
+            <span class="siat-value mono">{{ facturaEmitida.codigoControl }}</span>
+          </div>
+          <div class="siat-item">
+            <span class="siat-label">EMISIÓN</span>
+            <span class="siat-value">{{ fechaEmisionFormateada }}</span>
+          </div>
         </div>
       </div>
+
+      <!-- Separador -->
+      <hr class="ticket-divider">
+
+      <!-- Cliente -->
+      <div class="client-section">
+        <div class="client-row">
+          <span class="client-label">Razón Social:</span>
+          <span class="client-value">{{ facturaData?.clienteNombre || 'Consumidor Final' }}</span>
+        </div>
+        <div class="client-row">
+          <span class="client-label">CI/NIT:</span>
+          <span class="client-value mono">{{ facturaData?.clienteDocumento || '0' }}</span>
+        </div>
+        <div class="client-row" *ngIf="facturaData?.clienteTelefono">
+          <span class="client-label">Teléfono:</span>
+          <span class="client-value">{{ facturaData.clienteTelefono }}</span>
+        </div>
+      </div>
+
+      <hr class="ticket-divider">
 
       <!-- Detalle de Productos -->
-      <div class="items-table-container">
-        <table class="items-table">
+      <div class="products-section">
+        <table class="products-table">
           <thead>
             <tr>
               <th>CANT</th>
@@ -57,55 +107,115 @@
           </thead>
           <tbody>
             <tr *ngFor="let item of facturaData?.detalles">
-              <td>{{ item.cantidad }}</td>
-              <td>{{ item.producto?.nombre || 'Producto' }}</td>
-              <td class="text-right">Bs. {{ item.precioUnitario | number:'1.2-2' }}</td>
-              <td class="text-right">Bs. {{ item.subtotal | number:'1.2-2' }}</td>
+              <td class="col-cant">{{ item.cantidad }}</td>
+              <td class="col-desc">{{ item.producto?.nombre || 'Producto' }}</td>
+              <td class="col-price text-right">Bs. {{ item.precioUnitario | number:'1.2-2' }}</td>
+              <td class="col-sub text-right">Bs. {{ item.subtotal | number:'1.2-2' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
+      <hr class="ticket-divider">
+
       <!-- Resumen Financiero -->
-      <div class="financial-summary">
-        <div class="summary-row">
-          <span>Subtotal:</span>
+      <div class="financial-section">
+        <div class="fin-row">
+          <span>Subtotal</span>
           <span>Bs. {{ facturaData?.subtotal | number:'1.2-2' }}</span>
         </div>
-        <div class="summary-row discount" *ngIf="facturaData?.descuentoTotal > 0">
-          <span>Descuento:</span>
+        <div class="fin-row discount" *ngIf="facturaData?.descuentoTotal > 0">
+          <span>Descuento</span>
           <span>- Bs. {{ facturaData?.descuentoTotal | number:'1.2-2' }}</span>
         </div>
-        <div class="summary-row total">
-          <span>TOTAL A PAGAR:</span>
+        <div class="fin-row total-row">
+          <span>TOTAL</span>
           <span>Bs. {{ facturaData?.total | number:'1.2-2' }}</span>
         </div>
-        
-        <div class="payment-info">
-          <div class="summary-row">
-            <span>Monto Pagado:</span>
-            <span>Bs. {{ facturaData?.montoPagado | number:'1.2-2' }}</span>
-          </div>
-          <div class="summary-row change">
-            <span>Vuelto:</span>
-            <span>Bs. {{ facturaData?.vuelto | number:'1.2-2' }}</span>
-          </div>
+        <div class="fin-row payment-row">
+          <span>Monto Pagado</span>
+          <span>Bs. {{ facturaData?.montoPagado | number:'1.2-2' }}</span>
+        </div>
+        <div class="fin-row change-row">
+          <span>Vuelto</span>
+          <span>Bs. {{ facturaData?.vuelto | number:'1.2-2' }}</span>
         </div>
       </div>
-      
-      <div class="factura-footer">
-        <p>¡Gracias por su preferencia!</p>
-        <p class="small-text">Este comprobante es un documento contable interno.</p>
+
+      <!-- Leyenda SIAT -->
+      <div class="leyenda-siat" *ngIf="emisionExitosa && facturaEmitida?.leyendaSiat">
+        <p>"{{ facturaEmitida?.leyendaSiat }}"</p>
       </div>
 
+      <!-- Footer del Ticket -->
+      <div class="ticket-footer-text">
+        <p class="thanks-msg">¡Gracias por su preferencia! 🏗️🔧</p>
+        <p class="legal-text" *ngIf="!emisionExitosa">Este comprobante es un documento contable interno.</p>
+        <p class="legal-text" *ngIf="emisionExitosa">Factura emitida según normativa del SIAT - Bolivia</p>
+      </div>
     </div>
 
-    <div class="modal-actions">
-      <button class="btn-secondary" (click)="onClose()">Cerrar</button>
-      <button class="btn-primary" (click)="printFactura()">
-        <span class="material-icons">print</span>
-        Imprimir Recibo
-      </button>
+    <!-- ================================================================ -->
+    <!-- ACCIONES DEL TICKET                                              -->
+    <!-- ================================================================ -->
+    <div class="ticket-actions">
+
+      <!-- PASO 1: Si aún no se emitió la factura -->
+      <ng-container *ngIf="!emisionExitosa">
+        <button class="btn-emit" (click)="emitirFactura()" [disabled]="emitiendo">
+          <ng-container *ngIf="!emitiendo">
+            <span class="material-icons">receipt_long</span>
+            Emitir Factura Electrónica
+          </ng-container>
+          <ng-container *ngIf="emitiendo">
+            <span class="material-icons spin">sync</span>
+            Emitiendo...
+          </ng-container>
+        </button>
+        <button class="btn-secondary-ticket" (click)="onNuevaVenta()">
+          <span class="material-icons">add_circle</span>
+          Cerrar / Nueva Venta
+        </button>
+      </ng-container>
+
+      <!-- PASO 2: Factura emitida — acciones post-emisión -->
+      <ng-container *ngIf="emisionExitosa">
+        <!-- WhatsApp (togglable) -->
+        <div class="whatsapp-section" *ngIf="whatsappInputOpen">
+          <div class="whatsapp-input-row">
+            <div class="input-with-prefix">
+              <span class="prefix">+591</span>
+              <input
+                type="tel"
+                [(ngModel)]="whatsappTel"
+                placeholder="76543210"
+                maxlength="8"
+                class="tel-input"
+                autocomplete="off" />
+            </div>
+            <button class="btn-wa-send" (click)="enviarWhatsApp()" [disabled]="enviandoWhatsApp">
+              <span class="material-icons" *ngIf="!enviandoWhatsApp">send</span>
+              <span class="material-icons spin" *ngIf="enviandoWhatsApp">sync</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn-whatsapp" (click)="toggleWhatsAppInput()">
+            <span class="material-icons">chat</span>
+            {{ whatsappInputOpen ? 'Ocultar' : 'Enviar por WhatsApp' }}
+          </button>
+          <button class="btn-print" (click)="printFactura()">
+            <span class="material-icons">print</span>
+            Imprimir
+          </button>
+        </div>
+
+        <button class="btn-new-sale" (click)="onNuevaVenta()">
+          <span class="material-icons">add_circle</span>
+          Cerrar / Nueva Venta
+        </button>
+      </ng-container>
     </div>
 
   </div>
