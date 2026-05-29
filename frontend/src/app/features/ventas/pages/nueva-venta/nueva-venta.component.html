@@ -1,71 +1,75 @@
 <div class="pos-container">
   <!-- HEADER -->
   <header class="pos-header">
-    <div class="header-content">
-      <div class="header-title-section">
-        <h1 class="pos-title">Punto de Venta</h1>
-        <p class="pos-subtitle">{{ fechaFormato() }}</p>
+    <div class="header-left">
+      <h1 class="pos-title">Punto de Venta</h1>
+      <p class="pos-date">{{ fechaFormato() }}</p>
+    </div>
+    <div class="header-right">
+      <div class="header-items-count" *ngIf="carrito().length > 0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        {{ carrito().length }} items
       </div>
       <div class="header-total">
-        <div class="total-amount">Bs. {{ total() | number:'1.2-2' }}</div>
-        <div class="total-label">Total</div>
+        <span class="total-label">Total</span>
+        <span class="total-amount">Bs. {{ total() | number:'1.2-2' }}</span>
       </div>
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN GRID -->
   <main class="pos-main">
     <div class="pos-grid">
-      
-      <!-- LEFT SECTION: BÚSQUEDA Y CARRITO -->
+
+      <!-- LEFT: Search + Cart -->
       <section class="pos-left">
-        
-        <!-- BÚSQUEDA -->
+
+        <!-- Search -->
         <div class="search-section">
-          <div class="search-container">
-            <span class="search-icon material-icons">search</span>
-            <input 
+          <div class="search-box">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
               id="search-input"
-              type="text" 
+              type="text"
               [ngModel]="searchTerm()"
               (ngModelChange)="onSearchChange($event)"
-              placeholder="Buscar por nombre o código..."
+              placeholder="Buscar producto por nombre o código..."
               class="search-input"
               autocomplete="off"
             >
             @if (buscando()) {
-              <span class="search-loader material-icons">refresh</span>
+              <div class="search-spinner"></div>
             }
           </div>
 
-          <!-- DROPDOWN RESULTADOS MODERNIZADO -->
+          <!-- Search Results Dropdown -->
           @if (searchTerm().length >= 2) {
-            <div class="search-dropdown">
+            <div class="search-results">
               @if (buscando()) {
-                <div class="search-status-item">
-                  <span class="material-icons rotating">refresh</span>
+                <div class="search-msg">
+                  <div class="search-spinner sm"></div>
                   Buscando productos...
                 </div>
               } @else if (resultados().length === 0) {
-                <div class="search-status-item">
-                  <span class="material-icons">info</span>
-                  No se encontraron productos con "{{ searchTerm() }}"
+                <div class="search-msg">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  Sin resultados para "{{ searchTerm() }}"
                 </div>
               } @else {
                 @for (prod of resultados(); track prod.id) {
-                  <div class="result-item" (click)="agregarAlCarrito(prod)">
-                    <div class="r-info">
+                  <div class="result-row" (click)="agregarAlCarrito(prod)">
+                    <div class="r-left">
                       <span class="r-name">{{ prod.nombre }}</span>
-                      <span class="r-details">
-                        SKU: {{ prod.codigoProducto }} | 
-                        <span [style.color]="prod.stockActual > 5 ? 'var(--color-success)' : 'var(--color-danger)'" style="font-weight: bold;">
-                          Stock: {{ prod.stockActual }}
-                        </span>
+                      <span class="r-meta">
+                        <span class="r-sku">{{ prod.codigoProducto }}</span>
+                        <span class="r-stock" [class.low]="prod.stockActual <= 5">Stock: {{ prod.stockActual }}</span>
                       </span>
                     </div>
-                    <div class="r-price-container">
+                    <div class="r-right">
                       <span class="r-price">Bs. {{ prod.precioVenta | number:'1.2-2' }}</span>
-                      <span class="material-icons add-icon">add_circle</span>
+                      <button class="r-add">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      </button>
                     </div>
                   </div>
                 }
@@ -74,55 +78,44 @@
           }
         </div>
 
-        <!-- CARRITO -->
-        <div class="cart-section">
-          <div class="cart-header-title">
-            <span class="material-icons">shopping_cart</span>
-            Carrito de Compra
+        <!-- Cart -->
+        <div class="cart-card">
+          <div class="cart-head">
+            <div class="cart-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              Carrito
+            </div>
+            <span class="cart-count" *ngIf="carrito().length > 0">{{ carrito().length }} producto{{ carrito().length > 1 ? 's' : '' }}</span>
           </div>
-          
+
           @if (carrito().length === 0) {
-            <div class="cart-empty" style="padding: 40px;">
-              <span class="material-icons" style="font-size: 64px; opacity: 0.2; color: var(--color-primary);">shopping_cart</span>
-              <h3 class="empty-title" style="margin-top: 16px;">Carrito vacío</h3>
-              <p class="empty-text">Escanee o busque productos para comenzar</p>
+            <div class="cart-empty">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" stroke-width="1"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              <p class="empty-title">Carrito vacío</p>
+              <p class="empty-sub">Busca o escanea productos para comenzar</p>
             </div>
           } @else {
             <div class="cart-items">
-              @for (item of carrito(); track item.productoId) {
-                <div class="cart-item">
-                  <div class="item-info">
-                    <div class="item-name">{{ item.nombre }}</div>
-                    <div class="item-price">Precio: Bs. {{ item.precioUnitario | number:'1.2-2' }}</div>
+              @for (item of carrito(); track item.productoId; let i = $index) {
+                <div class="cart-row">
+                  <span class="cart-num">{{ i + 1 }}</span>
+                  <div class="cart-info">
+                    <span class="cart-name">{{ item.nombre }}</span>
+                    <span class="cart-price">Bs. {{ item.precioUnitario | number:'1.2-2' }} c/u</span>
                   </div>
-                  
-                  <div class="item-center-actions">
-                    <div class="quantity-control">
-                      <button (click)="cambiarCantidad(item, -1)" class="qty-btn" title="Disminuir (Mínimo 1)">
-                        <span class="material-icons">remove</span>
-                      </button>
-                      <input 
-                        type="number" 
-                        [ngModel]="item.cantidad" 
-                        (ngModelChange)="setCantidad(item, $event)"
-                        class="qty-input"
-                        min="1"
-                        step="1"
-                      >
-                      <button (click)="cambiarCantidad(item, 1)" class="qty-btn" title="Aumentar (Máximo stock)">
-                        <span class="material-icons">add</span>
-                      </button>
-                    </div>
-                    <div class="item-subtotal">
-                      Total: Bs. {{ (item.precioUnitario * item.cantidad) | number:'1.2-2' }}
-                    </div>
-                  </div>
-
-                  <div class="item-right-actions">
-                    <button (click)="quitarDelCarrito(item.productoId)" class="item-delete-btn" title="Eliminar del carrito">
-                      <span class="material-icons">delete_outline</span>
+                  <div class="qty-controls">
+                    <button class="qty-btn" (click)="cambiarCantidad(item, -1)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                    <input type="number" [ngModel]="item.cantidad" (ngModelChange)="setCantidad(item, $event)" class="qty-val" min="1">
+                    <button class="qty-btn" (click)="cambiarCantidad(item, 1)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </button>
                   </div>
+                  <span class="cart-subtotal">Bs. {{ (item.precioUnitario * item.cantidad) | number:'1.2-2' }}</span>
+                  <button class="cart-del" (click)="quitarDelCarrito(item.productoId)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
                 </div>
               }
             </div>
@@ -130,121 +123,127 @@
         </div>
       </section>
 
-      <!-- RIGHT SECTION: RESUMEN Y PAGO -->
+      <!-- RIGHT: Client + Summary + Payment -->
       <section class="pos-right">
-        
-        <!-- CLIENTE -->
-        <div class="client-card">
-          <h3 class="card-title">
-            <span class="material-icons">person</span> Cliente
+
+        <!-- Client -->
+        <div class="right-card">
+          <h3 class="card-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Datos del Cliente
           </h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-            <div class="form-group">
+          <div class="client-grid">
+            <div class="field">
               <label>Nombre</label>
-              <input type="text" [(ngModel)]="clienteNombre" placeholder="Opcional" class="form-input">
+              <input type="text" [(ngModel)]="clienteNombre" placeholder="Cliente General">
             </div>
-            <div class="form-group">
-              <label>CI/NIT</label>
-              <input type="text" [(ngModel)]="clienteDocumento" placeholder="Opcional" class="form-input">
+            <div class="field">
+              <label>CI / NIT</label>
+              <input type="text" [(ngModel)]="clienteDocumento" placeholder="Opcional">
             </div>
-            <div class="form-group">
+            <div class="field">
               <label>Teléfono</label>
-              <input type="tel" [(ngModel)]="clienteTelefono" placeholder="76543210" class="form-input" maxlength="8">
+              <input type="tel" [(ngModel)]="clienteTelefono" placeholder="76543210" maxlength="8">
             </div>
           </div>
         </div>
 
-        <!-- RESUMEN FINANCIERO -->
-        <div class="summary-card">
-          <div class="card-title">Resumen</div>
-          <div class="summary-row">
+        <!-- Summary -->
+        <div class="right-card">
+          <h3 class="card-label">Resumen de Venta</h3>
+          <div class="summary-line">
             <span>Subtotal</span>
             <span>Bs. {{ subtotal() | number:'1.2-2' }}</span>
           </div>
           @if (descuentoGlobal() > 0) {
-            <div class="summary-row" style="color: var(--color-success);">
+            <div class="summary-line text-green">
               <span>Descuento</span>
               <span>- Bs. {{ descuentoGlobal() | number:'1.2-2' }}</span>
             </div>
           }
-          <div class="summary-row total-row">
+          <div class="summary-total">
             <span>TOTAL</span>
             <span>Bs. {{ total() | number:'1.2-2' }}</span>
           </div>
         </div>
 
-        <!-- MÉTODO DE PAGO -->
-        <div class="payment-card">
-          <div class="card-title">Pago</div>
-          <div class="payment-methods">
-            <button (click)="setMetodoPago('EFECTIVO')" [class.active]="metodoPago() === 'EFECTIVO'" class="payment-btn">
-              <span class="material-symbols-outlined">payments</span>
-              <span>EFECTIVO</span>
+        <!-- Payment Method -->
+        <div class="right-card">
+          <h3 class="card-label">Método de Pago</h3>
+          <div class="pay-grid">
+            <button class="pay-btn" [class.active]="metodoPago() === 'EFECTIVO'" (click)="setMetodoPago('EFECTIVO')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><circle cx="12" cy="12" r="3"/><line x1="1" y1="8" x2="4" y2="8"/><line x1="20" y1="16" x2="23" y2="16"/></svg>
+              <span>Efectivo</span>
             </button>
-            <button (click)="setMetodoPago('TARJETA_DEBITO')" [class.active]="metodoPago() === 'TARJETA_DEBITO'" class="payment-btn">
-              <span class="material-symbols-outlined">credit_card</span>
-              <span>DÉBITO</span>
+            <button class="pay-btn" [class.active]="metodoPago() === 'TARJETA_DEBITO'" (click)="setMetodoPago('TARJETA_DEBITO')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              <span>Débito</span>
             </button>
-            <button (click)="setMetodoPago('TARJETA_CREDITO')" [class.active]="metodoPago() === 'TARJETA_CREDITO'" class="payment-btn">
-              <span class="material-symbols-outlined">card_giftcard</span>
-              <span>CRÉDITO</span>
+            <button class="pay-btn" [class.active]="metodoPago() === 'TARJETA_CREDITO'" (click)="setMetodoPago('TARJETA_CREDITO')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="7" y1="15" x2="10" y2="15"/><line x1="14" y1="15" x2="17" y2="15"/></svg>
+              <span>Crédito</span>
             </button>
-            <button (click)="setMetodoPago('TRANSFERENCIA')" [class.active]="metodoPago() === 'TRANSFERENCIA'" class="payment-btn">
-              <span class="material-symbols-outlined">account_balance</span>
-              <span>TRANS.</span>
+            <button class="pay-btn" [class.active]="metodoPago() === 'TRANSFERENCIA'" (click)="setMetodoPago('TRANSFERENCIA')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="17" y1="1" x2="17" y2="5"/><line x1="7" y1="19" x2="7" y2="23"/><polyline points="20 5 17 1 14 5"/><polyline points="4 19 7 23 10 19"/><path d="M21 5H9a4 4 0 0 0-4 4"/><path d="M3 19h12a4 4 0 0 0 4-4"/></svg>
+              <span>Transfer.</span>
             </button>
           </div>
 
+          <!-- Cash details -->
           @if (metodoPago() === 'EFECTIVO') {
-            <div class="payment-details">
-              <div class="form-group">
+            <div class="cash-section">
+              <div class="field">
                 <label>Monto Recibido</label>
-                <div class="amount-input-group">
-                  <span class="prefix">Bs.</span>
-                  <input 
-                    type="number" 
-                    [ngModel]="montoPagado()" 
+                <div class="amount-box">
+                  <span class="amt-prefix">Bs.</span>
+                  <input
+                    type="number"
+                    [ngModel]="montoPagado()"
                     (ngModelChange)="montoPagado.set($event)"
-                    class="big-input"
+                    class="amt-input"
                     placeholder="0.00"
                   >
                 </div>
               </div>
-              <div class="change-display-modern" [class.negative]="vuelto() < 0">
-                <div class="change-info">
-                  <span class="change-label">{{ vuelto() < 0 ? 'Faltan' : 'Vuelto' }}</span>
-                  <span class="change-value">Bs. {{ (vuelto() < 0 ? -vuelto() : vuelto()) | number:'1.2-2' }}</span>
+              <div class="change-box" [class.negative]="vuelto() < 0">
+                <div class="change-data">
+                  <span class="change-label">{{ vuelto() < 0 ? 'FALTAN' : 'VUELTO' }}</span>
+                  <span class="change-val">Bs. {{ (vuelto() < 0 ? -vuelto() : vuelto()) | number:'1.2-2' }}</span>
                 </div>
                 @if (vuelto() >= 0) {
-                  <span class="material-icons success-check">check_circle</span>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 } @else {
-                  <span class="material-icons error-icon">warning</span>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 }
               </div>
             </div>
           } @else {
-            <div class="payment-details">
-              <div class="form-group">
-                <label>Referencia / N° Operación</label>
-                <input type="text" [(ngModel)]="numeroReferencia" placeholder="Ej: 123456" class="form-input">
+            <div class="cash-section">
+              <div class="field">
+                <label>Referencia / Nº Operación</label>
+                <input type="text" [(ngModel)]="numeroReferencia" placeholder="Ej: 123456" class="ref-input">
               </div>
             </div>
           }
+        </div>
 
-          <div class="actions-container" style="margin-top: 16px;">
-            <button (click)="limpiarCarrito()" class="btn-action limpiar">
-              <span class="material-icons">delete</span>
-              <span>Limpiar</span>
-            </button>
-            <button (click)="confirmarVenta()" [disabled]="carrito().length === 0 || processing() || (metodoPago() === 'EFECTIVO' && vuelto() < 0)" class="btn-action cobrar">
-              @if(processing()) {
-                <span class="material-icons" style="animation: rotate 1s linear infinite;">refresh</span>
-              } @else {
-                <span class="material-icons">check_circle</span>
-                <span>COBRAR</span>
-              }
-            </button>
-          </div>
+        <!-- Actions -->
+        <div class="action-row">
+          <button class="btn-clear" (click)="limpiarCarrito()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Limpiar
+          </button>
+          <button class="btn-cobrar" (click)="confirmarVenta()"
+            [disabled]="carrito().length === 0 || processing() || (metodoPago() === 'EFECTIVO' && vuelto() < 0)"
+            [class.has-items]="carrito().length > 0">
+            @if(processing()) {
+              <div class="btn-spinner"></div>
+              Procesando...
+            } @else {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              COBRAR · Bs. {{ total() | number:'1.2-2' }}
+            }
+          </button>
         </div>
       </section>
     </div>

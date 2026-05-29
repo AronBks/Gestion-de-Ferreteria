@@ -1,409 +1,252 @@
-<div class="ventas-container">
-  <!-- CABECERA -->
-  <header class="ventas-header">
-    <div class="header-content">
-      <h1 class="header-title">Gestión de Ventas</h1>
-      <p class="header-subtitle">Administra y controla tus ventas en tiempo real</p>
+<div class="ventas-page">
+  <!-- HEADER -->
+  <header class="page-header">
+    <div>
+      <h1>Gestión de Ventas</h1>
+      <p class="subtitle">Control completo de tu historial de transacciones</p>
     </div>
+    <button class="btn-nueva" (click)="irANuevaVenta()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nueva Venta
+    </button>
   </header>
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <main class="ventas-main">
-
-    <!-- SECCIÓN DE KPIs -->
-    <section class="kpi-section">
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <div class="kpi-icon-box"><span class="kpi-icon">💰</span></div>
-            <h3 class="kpi-title">VENTAS HOY</h3>
-          </div>
-          <div class="kpi-value">{{ (ventasHoy().total || 0) | number:'1.2-2' }}</div>
-          <p class="kpi-currency">Bs.</p>
-          <div class="kpi-footer"><small>Generadas en el día</small></div>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <div class="kpi-icon-box"><span class="kpi-icon">📋</span></div>
-            <h3 class="kpi-title">TRANSACCIONES</h3>
-          </div>
-          <div class="kpi-value">{{ ventasHoy().transacciones || 0 }}</div>
-          <p class="kpi-currency">Operaciones</p>
-          <div class="kpi-footer"><small>Número de ventas realizadas</small></div>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <div class="kpi-icon-box"><span class="kpi-icon">💳</span></div>
-            <h3 class="kpi-title">MÉTODO MÁS USADO</h3>
-          </div>
-          <div class="kpi-value kpi-value-sm">{{ ventasHoy().metodoMasUsado || '-' }}</div>
-          <div class="kpi-footer"><small>Medio de pago preferido</small></div>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <div class="kpi-icon-box"><span class="kpi-icon">📊</span></div>
-            <h3 class="kpi-title">TICKET PROMEDIO</h3>
-          </div>
-          <div class="kpi-value">{{ (ventasHoy().ticketPromedio || 0) | number:'1.2-2' }}</div>
-          <p class="kpi-currency">Bs.</p>
-          <div class="kpi-footer"><small>Promedio por venta</small></div>
-        </div>
+  <!-- KPI CARDS -->
+  <section class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-icon-box kpi-amber">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       </div>
-    </section>
-
-    <!-- SECCIÓN DE ACCIÓN Y FILTROS -->
-    <section class="action-section">
-      <div class="action-card">
-        <div class="action-header">
-          <h2 class="action-title">Historial de Ventas</h2>
-          <button class="btn-primary" (click)="irANuevaVenta()">
-            <span class="material-icons">add</span> Nueva Venta
-          </button>
-        </div>
-
-        <div class="filter-form">
-          <div class="form-group">
-            <label for="filter-estado">Estado Venta</label>
-            <select
-              id="filter-estado"
-              [ngModel]="filtroEstado()"
-              (ngModelChange)="filtroEstado.set($event); onFiltroChange()"
-              class="form-input">
-              <option value="">Todos</option>
-              <option value="COMPLETADA">Completada</option>
-              <option value="PENDIENTE">Pendiente</option>
-              <option value="CANCELADA">Cancelada</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="filter-metodo">Método de Pago</label>
-            <select
-              id="filter-metodo"
-              [ngModel]="filtroMetodoPago()"
-              (ngModelChange)="filtroMetodoPago.set($event); onFiltroChange()"
-              class="form-input">
-              <option value="">Todos</option>
-              <option value="EFECTIVO">Efectivo</option>
-              <option value="TARJETA_DEBITO">T. Débito</option>
-              <option value="TARJETA_CREDITO">T. Crédito</option>
-              <option value="TRANSFERENCIA">Transferencia</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="filter-factura">Estado Factura</label>
-            <select
-              id="filter-factura"
-              [ngModel]="filtroEstadoFactura()"
-              (ngModelChange)="filtroEstadoFactura.set($event); onFiltroChange()"
-              class="form-input">
-              <option value="">Todos</option>
-              <option value="EMITIDA">Emitida</option>
-              <option value="ANULADA">Anulada</option>
-              <option value="PENDIENTE">Pendiente</option>
-              <option value="RECHAZADA">Rechazada</option>
-              <option value="SIN_FACTURA">Sin Factura</option>
-            </select>
-          </div>
-        </div>
+      <div class="kpi-data">
+        <span class="kpi-value">Bs. {{ (ventasHoy().total || 0) | number:'1.2-2' }}</span>
+        <span class="kpi-label">Ventas Hoy</span>
       </div>
-    </section>
-
-    <!-- SECCIÓN DE TABLA / EMPTY STATE -->
-    <section class="data-section">
-
-      <!-- Loading -->
-      <div *ngIf="loading()" class="empty-state">
-        <div class="loading-spinner"></div>
-        <h3>Cargando ventas</h3>
-        <p>Por favor espera mientras se cargan los datos</p>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon-box kpi-blue">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!loading() && ventas().length === 0" class="empty-state">
-        <div class="empty-icon">📦</div>
-        <h3>No hay ventas registradas</h3>
-        <p>Comienza registrando una nueva venta para ver el historial aquí</p>
-        <button class="btn-secondary" (click)="irANuevaVenta()">Crear Primera Venta</button>
+      <div class="kpi-data">
+        <span class="kpi-value">{{ ventasHoy().transacciones || 0 }}</span>
+        <span class="kpi-label">Transacciones</span>
       </div>
-
-      <!-- Data Table -->
-      <div *ngIf="ventas().length > 0 && !loading()" class="table-card">
-        <div class="table-header">
-          <h3>Historial de Ventas</h3>
-          <span class="table-count">{{ total() }} registros</span>
-        </div>
-
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Nº Venta</th>
-                <th>Fecha</th>
-                <th>Cliente</th>
-                <th>Vendedor</th>
-                <th>Método Pago</th>
-                <th class="text-right">Total</th>
-                <th class="text-center">Estado</th>
-                <th class="text-center">Factura</th>
-                <th class="text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let venta of ventas(); trackBy: trackByVentaId" class="table-row">
-                <!-- Nº Venta -->
-                <td class="col-venta-numero">
-                  <span class="venta-badge">#{{ venta.numeroVenta }}</span>
-                </td>
-
-                <!-- Fecha -->
-                <td>{{ venta.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</td>
-
-                <!-- Cliente -->
-                <td>
-                  <div class="client-info">
-                    <span class="client-name">{{ venta.clienteNombre || 'Cliente General' }}</span>
-                    <small *ngIf="venta.clienteDocumento" class="client-doc">NIT: {{ venta.clienteDocumento }}</small>
-                  </div>
-                </td>
-
-                <!-- Vendedor -->
-                <td>
-                  <div class="vendor-badge">{{ venta.vendedor?.nombre || 'N/A' }}</div>
-                </td>
-
-                <!-- Método de Pago -->
-                <td>
-                  <span class="method-badge">{{ venta.metodoPago }}</span>
-                </td>
-
-                <!-- Total -->
-                <td class="col-total">
-                  <strong>Bs. {{ venta.total | number:'1.2-2' }}</strong>
-                </td>
-
-                <!-- Estado Venta -->
-                <td class="col-estado">
-                  <span
-                    class="status-badge"
-                    [ngClass]="{
-                      'status-success': venta.estado === 'COMPLETADA',
-                      'status-warning': venta.estado === 'PENDIENTE',
-                      'status-danger': venta.estado === 'CANCELADA'
-                    }">
-                    {{ venta.estado }}
-                  </span>
-                </td>
-
-                <!-- Estado Factura SIAT -->
-                <td class="col-factura">
-                  <span class="factura-badge" [ngClass]="getEstadoFacturaClass(venta)">
-                    <span class="factura-dot"></span>
-                    {{ getEstadoFacturaLabel(venta) }}
-                  </span>
-                </td>
-
-                <!-- Acciones (Dropdown) -->
-                <td class="col-actions">
-                  <div class="actions-dropdown-wrapper">
-                    <button
-                      class="btn-actions-trigger"
-                      (click)="toggleDropdown(venta.id, $event)"
-                      [class.active]="dropdownOpenId() === venta.id"
-                      title="Acciones">
-                      <span class="material-icons">more_vert</span>
-                    </button>
-
-                    <div class="actions-dropdown" *ngIf="dropdownOpenId() === venta.id">
-                      <!-- Ver Detalle -->
-                      <button class="dropdown-item" (click)="verDetalle(venta.id)">
-                        <span class="material-icons">visibility</span>
-                        Ver Detalle
-                      </button>
-
-                      <!-- Reenviar WhatsApp -->
-                      <button
-                        class="dropdown-item"
-                        [disabled]="!tieneFacturaEmitida(venta)"
-                        (click)="abrirReenviarWhatsApp(venta)">
-                        <span class="material-icons">chat</span>
-                        Reenviar por WhatsApp
-                      </button>
-
-                      <!-- Anular Factura -->
-                      <button
-                        class="dropdown-item dropdown-item-danger"
-                        [disabled]="!puedeAnularFactura(venta)"
-                        (click)="abrirAnularFactura(venta)">
-                        <span class="material-icons">block</span>
-                        Anular Factura
-                      </button>
-
-                      <div class="dropdown-divider"></div>
-
-                      <!-- Cancelar Venta -->
-                      <button
-                        class="dropdown-item dropdown-item-danger"
-                        [disabled]="venta.estado === 'CANCELADA'"
-                        (click)="confirmarCancelacion(venta)">
-                        <span class="material-icons">cancel</span>
-                        Cancelar Venta
-                      </button>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- PAGINACIÓN -->
-        <div class="pagination-bar" *ngIf="totalPages() > 1">
-          <div class="pagination-info">
-            Mostrando página <strong>{{ page() }}</strong> de <strong>{{ totalPages() }}</strong>
-            &nbsp;·&nbsp; {{ total() }} ventas totales
-          </div>
-          <div class="pagination-controls">
-            <button
-              class="page-btn"
-              [disabled]="page() <= 1"
-              (click)="irAPagina(1)"
-              title="Primera página">
-              <span class="material-icons">first_page</span>
-            </button>
-            <button
-              class="page-btn"
-              [disabled]="page() <= 1"
-              (click)="irAPagina(page() - 1)"
-              title="Anterior">
-              <span class="material-icons">chevron_left</span>
-            </button>
-
-            <button
-              *ngFor="let p of paginasVisibles()"
-              class="page-btn page-num"
-              [class.active]="p === page()"
-              (click)="irAPagina(p)">
-              {{ p }}
-            </button>
-
-            <button
-              class="page-btn"
-              [disabled]="page() >= totalPages()"
-              (click)="irAPagina(page() + 1)"
-              title="Siguiente">
-              <span class="material-icons">chevron_right</span>
-            </button>
-            <button
-              class="page-btn"
-              [disabled]="page() >= totalPages()"
-              (click)="irAPagina(totalPages())"
-              title="Última página">
-              <span class="material-icons">last_page</span>
-            </button>
-          </div>
-        </div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon-box kpi-green">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
       </div>
-    </section>
-  </main>
+      <div class="kpi-data">
+        <span class="kpi-value">{{ ventasHoy().metodoMasUsado || '-' }}</span>
+        <span class="kpi-label">Método Preferido</span>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon-box kpi-purple">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      </div>
+      <div class="kpi-data">
+        <span class="kpi-value">Bs. {{ (ventasHoy().ticketPromedio || 0) | number:'1.2-2' }}</span>
+        <span class="kpi-label">Ticket Promedio</span>
+      </div>
+    </div>
+  </section>
 
-  <!-- ================================================================== -->
-  <!-- MODAL: Cancelar Venta                                              -->
-  <!-- ================================================================== -->
-  <div *ngIf="cancelModalOpen()" class="modal-backdrop" (click)="cerrarModales()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header modal-header-danger">
-        <span class="material-icons">warning</span>
+  <!-- FILTROS + TABLA -->
+  <section class="table-section">
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-left">
+        <h3>Historial</h3>
+        <span class="record-count" *ngIf="total() > 0">{{ total() }} registros</span>
+      </div>
+      <div class="filter-controls">
+        <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event); onFiltroChange()" class="filter-select">
+          <option value="">Estado: Todos</option>
+          <option value="COMPLETADA">Completada</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="CANCELADA">Cancelada</option>
+        </select>
+        <select [ngModel]="filtroMetodoPago()" (ngModelChange)="filtroMetodoPago.set($event); onFiltroChange()" class="filter-select">
+          <option value="">Pago: Todos</option>
+          <option value="EFECTIVO">Efectivo</option>
+          <option value="TARJETA_DEBITO">T. Débito</option>
+          <option value="TARJETA_CREDITO">T. Crédito</option>
+          <option value="TRANSFERENCIA">Transferencia</option>
+        </select>
+        <select [ngModel]="filtroEstadoFactura()" (ngModelChange)="filtroEstadoFactura.set($event); onFiltroChange()" class="filter-select">
+          <option value="">Factura: Todos</option>
+          <option value="EMITIDA">Emitida</option>
+          <option value="ANULADA">Anulada</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="SIN_FACTURA">Sin Factura</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading()" class="state-box">
+      <div class="loader-ring"></div>
+      <p>Cargando ventas...</p>
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="!loading() && ventas().length === 0" class="state-box">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      <h3>Sin ventas registradas</h3>
+      <p>Comienza registrando una nueva venta</p>
+      <button class="btn-nueva sm" (click)="irANuevaVenta()">Crear Primera Venta</button>
+    </div>
+
+    <!-- Table -->
+    <div *ngIf="!loading() && ventas().length > 0" class="table-wrap">
+      <table class="vtable">
+        <thead>
+          <tr>
+            <th>Nº Venta</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Vendedor</th>
+            <th>Método</th>
+            <th class="text-right">Total</th>
+            <th class="text-center">Estado</th>
+            <th class="text-center">Factura</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let venta of ventas(); trackBy: trackByVentaId" class="vrow">
+            <td><span class="venta-id">#{{ venta.numeroVenta }}</span></td>
+            <td class="td-date">{{ venta.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="client-name">{{ venta.clienteNombre || 'Cliente General' }}</span>
+              <small *ngIf="venta.clienteDocumento" class="client-doc">NIT: {{ venta.clienteDocumento }}</small>
+            </td>
+            <td><span class="vendor-pill">{{ venta.vendedor?.nombre || 'N/A' }}</span></td>
+            <td><span class="method-pill" [attr.data-method]="venta.metodoPago">{{ venta.metodoPago }}</span></td>
+            <td class="text-right"><strong class="total-val">Bs. {{ venta.total | number:'1.2-2' }}</strong></td>
+            <td class="text-center">
+              <span class="status-pill" [ngClass]="{'st-ok': venta.estado === 'COMPLETADA', 'st-warn': venta.estado === 'PENDIENTE', 'st-err': venta.estado === 'CANCELADA'}">
+                {{ venta.estado }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="factura-pill" [ngClass]="getEstadoFacturaClass(venta)">
+                <span class="fdot"></span>{{ getEstadoFacturaLabel(venta) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="actions-dropdown-wrapper">
+                <button class="btn-dots" (click)="toggleDropdown(venta.id, $event)" [class.active]="dropdownOpenId() === venta.id">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+                </button>
+                <div class="dropdown-menu" *ngIf="dropdownOpenId() === venta.id">
+                  <button class="dd-item" (click)="verDetalle(venta.id)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Ver Detalle
+                  </button>
+                  <button class="dd-item" [disabled]="!tieneFacturaEmitida(venta)" (click)="abrirReenviarWhatsApp(venta)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Enviar WhatsApp
+                  </button>
+                  <div class="dd-divider"></div>
+                  <button class="dd-item dd-danger" [disabled]="!puedeAnularFactura(venta)" (click)="abrirAnularFactura(venta)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    Anular Factura
+                  </button>
+                  <button class="dd-item dd-danger" [disabled]="venta.estado === 'CANCELADA'" (click)="confirmarCancelacion(venta)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Cancelar Venta
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages() > 1">
+      <span class="page-info">Página <strong>{{ page() }}</strong> de <strong>{{ totalPages() }}</strong> · {{ total() }} ventas</span>
+      <div class="page-btns">
+        <button class="pg" [disabled]="page() <= 1" (click)="irAPagina(1)">«</button>
+        <button class="pg" [disabled]="page() <= 1" (click)="irAPagina(page() - 1)">‹</button>
+        <button *ngFor="let p of paginasVisibles()" class="pg" [class.active]="p === page()" (click)="irAPagina(p)">{{ p }}</button>
+        <button class="pg" [disabled]="page() >= totalPages()" (click)="irAPagina(page() + 1)">›</button>
+        <button class="pg" [disabled]="page() >= totalPages()" (click)="irAPagina(totalPages())">»</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MODALS ============ -->
+
+  <!-- Modal: Cancelar Venta -->
+  <div *ngIf="cancelModalOpen()" class="modal-overlay" (click)="cerrarModales()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-top danger">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         <h2>Cancelar Venta</h2>
       </div>
       <div class="modal-body">
-        <p class="modal-message">
-          ¿Estás seguro de cancelar la venta <strong>#{{ ventaSeleccionada()?.numeroVenta }}</strong>?
-        </p>
-        <p class="modal-warning">
-          El stock será devuelto automáticamente al inventario.
-        </p>
+        <p>¿Cancelar la venta <strong>#{{ ventaSeleccionada()?.numeroVenta }}</strong>?</p>
+        <p class="modal-hint">El stock será devuelto automáticamente al inventario.</p>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="cerrarModales()">Cancelar</button>
+      <div class="modal-actions">
+        <button class="btn-ghost" (click)="cerrarModales()">No, Volver</button>
         <button class="btn-danger" (click)="ejecutarCancelacion()">Sí, Cancelar Venta</button>
       </div>
     </div>
   </div>
 
-  <!-- ================================================================== -->
-  <!-- MODAL: Anular Factura                                              -->
-  <!-- ================================================================== -->
-  <div *ngIf="anularFacturaModalOpen()" class="modal-backdrop" (click)="cerrarModales()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header modal-header-danger">
-        <span class="material-icons">block</span>
+  <!-- Modal: Anular Factura -->
+  <div *ngIf="anularFacturaModalOpen()" class="modal-overlay" (click)="cerrarModales()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-top danger">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
         <h2>Anular Factura</h2>
       </div>
       <div class="modal-body">
-        <p class="modal-message">
-          ¿Estás seguro de anular la factura
-          <strong>#{{ ventaSeleccionada()?.factura?.numeroFactura }}</strong>
-          asociada a la venta <strong>#{{ ventaSeleccionada()?.numeroVenta }}</strong>?
-        </p>
-        <div class="modal-detail-row">
-          <span class="detail-label">CUF:</span>
-          <span class="detail-value mono">{{ ventaSeleccionada()?.factura?.cuf?.substring(0, 20) }}...</span>
+        <p>¿Anular factura <strong>#{{ ventaSeleccionada()?.factura?.numeroFactura }}</strong> de la venta <strong>#{{ ventaSeleccionada()?.numeroVenta }}</strong>?</p>
+        <div class="modal-detail">
+          <span>CUF:</span>
+          <code>{{ ventaSeleccionada()?.factura?.cuf?.substring(0, 20) }}...</code>
         </div>
-        <div class="modal-detail-row">
-          <span class="detail-label">Total:</span>
-          <span class="detail-value highlight">Bs. {{ ventaSeleccionada()?.total | number:'1.2-2' }}</span>
+        <div class="modal-detail">
+          <span>Total:</span>
+          <strong class="text-amber">Bs. {{ ventaSeleccionada()?.total | number:'1.2-2' }}</strong>
         </div>
-        <p class="modal-warning">
-          Esta acción reportará la anulación ante el SIAT. No se puede revertir.
-        </p>
+        <p class="modal-hint">Esta acción reportará la anulación ante el SIAT. No se puede revertir.</p>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="cerrarModales()">Cancelar</button>
+      <div class="modal-actions">
+        <button class="btn-ghost" (click)="cerrarModales()">Cancelar</button>
         <button class="btn-danger" (click)="ejecutarAnularFactura()">Sí, Anular Factura</button>
       </div>
     </div>
   </div>
 
-  <!-- ================================================================== -->
-  <!-- MODAL: Reenviar por WhatsApp                                       -->
-  <!-- ================================================================== -->
-  <div *ngIf="whatsappModalOpen()" class="modal-backdrop" (click)="cerrarModales()">
-    <div class="modal-content modal-whatsapp" (click)="$event.stopPropagation()">
-      <div class="modal-header modal-header-whatsapp">
-        <span class="material-icons">chat</span>
-        <h2>Enviar Factura por WhatsApp</h2>
+  <!-- Modal: WhatsApp -->
+  <div *ngIf="whatsappModalOpen()" class="modal-overlay" (click)="cerrarModales()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-top whatsapp">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <h2>Enviar por WhatsApp</h2>
       </div>
       <div class="modal-body">
-        <p class="modal-message">
-          Factura <strong>#{{ ventaSeleccionada()?.factura?.numeroFactura }}</strong>
-          — <strong>Bs. {{ ventaSeleccionada()?.total | number:'1.2-2' }}</strong>
-        </p>
-        <div class="form-group">
-          <label for="whatsapp-tel">Número de teléfono (Bolivia)</label>
-          <div class="input-with-prefix">
-            <span class="input-prefix">+591</span>
-            <input
-              id="whatsapp-tel"
-              type="tel"
-              class="form-input"
-              placeholder="76543210"
-              [ngModel]="whatsappTelefono()"
-              (ngModelChange)="whatsappTelefono.set($event)"
-              maxlength="8"
-              autocomplete="off" />
+        <p>Factura <strong>#{{ ventaSeleccionada()?.factura?.numeroFactura }}</strong> — <strong class="text-amber">Bs. {{ ventaSeleccionada()?.total | number:'1.2-2' }}</strong></p>
+        <div class="form-field">
+          <label>Teléfono (Bolivia)</label>
+          <div class="input-prefix-group">
+            <span class="prefix">+591</span>
+            <input type="tel" placeholder="76543210" [ngModel]="whatsappTelefono()" (ngModelChange)="whatsappTelefono.set($event)" maxlength="8" autocomplete="off"/>
           </div>
-          <small class="form-hint">Se abrirá WhatsApp Web con el mensaje de la factura</small>
+          <small>Se abrirá WhatsApp Web con el mensaje de la factura</small>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="cerrarModales()">Cancelar</button>
+      <div class="modal-actions">
+        <button class="btn-ghost" (click)="cerrarModales()">Cancelar</button>
         <button class="btn-whatsapp" (click)="ejecutarEnvioWhatsApp()">
-          <span class="material-icons">send</span> Enviar por WhatsApp
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Enviar
         </button>
       </div>
     </div>

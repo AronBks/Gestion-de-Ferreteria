@@ -533,7 +533,7 @@ export class DetalleVentaComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/ventas']);
+    this.router.navigate(['/dashboard/ventas']);
   }
 
   imprimir() {

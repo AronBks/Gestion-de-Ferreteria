@@ -76,10 +76,11 @@ export class ReportesService {
       const topMap = new Map();
       detalles.forEach(d => {
         if (!d.producto) return;
-        const current = topMap.get(d.producto.id) || { nombre: d.producto.nombre, cantidadVendida: 0 };
+        const current = topMap.get(d.producto.id) || { nombre: d.producto.nombre, cantidadVendida: 0, ingresos: 0 };
         topMap.set(d.producto.id, {
           nombre: d.producto.nombre,
-          cantidadVendida: current.cantidadVendida + Number(d.cantidad)
+          cantidadVendida: current.cantidadVendida + Number(d.cantidad),
+          ingresos: current.ingresos + Number(d.subtotal || 0)
         });
       });
 
