@@ -1,3 +1,103 @@
+// ============================================================
+// INTERFACES — Módulo de Reportes (Nuevo)
+// ============================================================
+
+export interface ReporteFiltros {
+  fechaInicio?: string;
+  fechaFin?: string;
+  categoriaId?: string;
+  metodoPago?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface ReporteKPIs {
+  ventasTotales: number;
+  totalTransacciones: number;
+  margenGanancia: number;
+  stockCritico: number;
+  trendVentas: number;
+  trendMargen: number;
+  trendTransacciones: number;
+  ticketPromedio: number;
+}
+
+export interface ReporteVentaDia {
+  fecha: string;
+  total: number;
+  transacciones: number;
+}
+
+export interface ReporteTopProducto {
+  nombre: string;
+  codigo: string;
+  cantidadVendida: number;
+  ingresos: number;
+  margen: number;
+}
+
+export interface ReporteVentaProducto {
+  nombre: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+}
+
+export interface ReporteVentaRow {
+  id: string;
+  numeroVenta: string;
+  fecha: string;
+  clienteNombre: string;
+  clienteDocumento: string;
+  subtotal: number;
+  descuento: number;
+  total: number;
+  metodoPago: string;
+  estado: string;
+  vendedor: string;
+  cantidadProductos: number;
+  productos: ReporteVentaProducto[];
+}
+
+export interface ReporteTablaVentas {
+  data: ReporteVentaRow[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ReporteFiltrosAplicados {
+  fechaInicio: string;
+  fechaFin: string;
+  categoriaId: string | null;
+  metodoPago: string | null;
+  rangoDias: number;
+}
+
+export interface ReporteResponse {
+  kpis: ReporteKPIs;
+  ventasPorDia: ReporteVentaDia[];
+  topProductos: ReporteTopProducto[];
+  tablaVentas: ReporteTablaVentas;
+  filtrosAplicados: ReporteFiltrosAplicados;
+}
+
+export interface ReporteExportResponse {
+  headers: string[];
+  rows: any[];
+  totalRegistros: number;
+}
+
+export interface CategoriaFiltro {
+  id: string;
+  nombre: string;
+}
+
+// ============================================================
+// INTERFACES — Dashboard Original (compatibilidad)
+// ============================================================
+
 export interface TopProductoStatus {
   nombre: string;
   cantidadVendida: number;

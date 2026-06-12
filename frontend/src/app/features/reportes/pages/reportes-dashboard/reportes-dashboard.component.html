@@ -1,0 +1,399 @@
+<!-- ============================================================
+     MÓDULO DE REPORTES Y ESTADÍSTICAS
+     4 Capas: Filtros → KPIs → Gráficos → Tabla
+     ============================================================ -->
+<div class="reportes-container" id="reportes-module">
+
+  <!-- ========== HEADER ========== -->
+  <header class="reportes-header">
+    <div class="header-info">
+      <h1>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+          <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+          <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+        </svg>
+        Reportes y Estadísticas
+      </h1>
+      <p class="header-subtitle">Analiza el rendimiento de tu ferretería en tiempo real</p>
+    </div>
+    <div class="header-actions no-print">
+      <span class="rango-label" *ngIf="rangoLabel()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        {{ rangoLabel() }}
+      </span>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       CAPA 1: FILTROS GLOBALES
+       ============================================================ -->
+  <section class="filtros-section card-glass no-print" id="filtros-globales">
+    <div class="filtros-row">
+      <!-- Rango rápido -->
+      <div class="filtro-grupo filtro-rangos">
+        <label class="filtro-label">Período</label>
+        <div class="rango-botones">
+          <button [class.active]="rangoActivo() === 'hoy'" (click)="aplicarRangoRapido('hoy')">Hoy</button>
+          <button [class.active]="rangoActivo() === '7d'" (click)="aplicarRangoRapido('7d')">7 Días</button>
+          <button [class.active]="rangoActivo() === '30d'" (click)="aplicarRangoRapido('30d')">30 Días</button>
+          <button [class.active]="rangoActivo() === '90d'" (click)="aplicarRangoRapido('90d')">90 Días</button>
+          <button [class.active]="rangoActivo() === 'custom'" (click)="aplicarRangoRapido('custom')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            Personalizado
+          </button>
+        </div>
+      </div>
+
+      <!-- Fechas custom -->
+      <div class="filtro-grupo filtro-fechas" *ngIf="mostrarFechasCustom()">
+        <label class="filtro-label">Rango Personalizado</label>
+        <div class="fecha-inputs">
+          <input type="date" [ngModel]="filtroFechaInicio()" (ngModelChange)="filtroFechaInicio.set($event)"
+            class="input-fecha" />
+          <span class="fecha-sep">—</span>
+          <input type="date" [ngModel]="filtroFechaFin()" (ngModelChange)="filtroFechaFin.set($event)"
+            class="input-fecha" />
+        </div>
+      </div>
+
+      <!-- Categoría -->
+      <div class="filtro-grupo">
+        <label class="filtro-label">Categoría</label>
+        <select [ngModel]="filtroCategoria()" (ngModelChange)="filtroCategoria.set($event)" class="input-select">
+          <option value="">Todas las categorías</option>
+          <option *ngFor="let cat of categorias()" [value]="cat.id">{{ cat.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Método de pago -->
+      <div class="filtro-grupo">
+        <label class="filtro-label">Método de Pago</label>
+        <select [ngModel]="filtroMetodoPago()" (ngModelChange)="filtroMetodoPago.set($event)" class="input-select">
+          <option *ngFor="let mp of metodosPago" [value]="mp.value">{{ mp.label }}</option>
+        </select>
+      </div>
+
+      <!-- Acciones -->
+      <div class="filtro-grupo filtro-acciones">
+        <label class="filtro-label">&nbsp;</label>
+        <div class="acciones-btns">
+          <button class="btn-aplicar" (click)="aplicarFiltros()" id="btn-aplicar-filtros">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            Aplicar
+          </button>
+          <button class="btn-limpiar" (click)="limpiarFiltros()" id="btn-limpiar-filtros">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            </svg>
+            Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       LOADING STATE
+       ============================================================ -->
+  <div class="loading-overlay" *ngIf="loading()">
+    <div class="loader-container">
+      <div class="loader-ring"></div>
+      <p>Procesando reporte...</p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ERROR STATE
+       ============================================================ -->
+  <div class="error-state" *ngIf="errorMsg() && !loading()">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.5">
+      <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" />
+      <line x1="9" y1="9" x2="15" y2="15" />
+    </svg>
+    <h3>Error de conexión</h3>
+    <p>{{ errorMsg() }}</p>
+    <button class="btn-aplicar" (click)="cargarDatos()">Reintentar</button>
+  </div>
+
+  <!-- ============================================================
+       CONTENIDO PRINCIPAL (cuando hay datos)
+       ============================================================ -->
+  <div class="reportes-content" *ngIf="data() && !loading() && !errorMsg()">
+
+    <!-- ============================================================
+         CAPA 2: KPIs
+         ============================================================ -->
+    <section class="kpis-grid" id="kpis-section">
+      <!-- Ventas Totales -->
+      <div class="kpi-card kpi-ventas">
+        <div class="kpi-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Ventas Totales</span>
+          <span class="kpi-value">Bs. {{ formatCurrency(data()!.kpis.ventasTotales) }}</span>
+          <div class="kpi-trend" [class.positive]="data()!.kpis.trendVentas >= 0"
+            [class.negative]="data()!.kpis.trendVentas < 0">
+            <span>{{ getTrendIcon(data()!.kpis.trendVentas) }} {{ abs(data()!.kpis.trendVentas) }}%</span>
+            <span class="trend-label">vs periodo anterior</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Margen de Ganancia -->
+      <div class="kpi-card kpi-margen">
+        <div class="kpi-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Margen de Ganancia</span>
+          <span class="kpi-value">Bs. {{ formatCurrency(data()!.kpis.margenGanancia) }}</span>
+          <div class="kpi-trend" [class.positive]="data()!.kpis.trendMargen >= 0"
+            [class.negative]="data()!.kpis.trendMargen < 0">
+            <span>{{ getTrendIcon(data()!.kpis.trendMargen) }} {{ abs(data()!.kpis.trendMargen) }}%</span>
+            <span class="trend-label">vs periodo anterior</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Crítico -->
+      <div class="kpi-card kpi-stock">
+        <div class="kpi-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Stock Crítico</span>
+          <span class="kpi-value">{{ data()!.kpis.stockCritico }}
+            <small class="kpi-unit">productos</small>
+          </span>
+          <div class="kpi-trend" [class.negative]="data()!.kpis.stockCritico > 0"
+            [class.positive]="data()!.kpis.stockCritico === 0">
+            <span *ngIf="data()!.kpis.stockCritico > 0">⚠ Requieren atención</span>
+            <span *ngIf="data()!.kpis.stockCritico === 0">✓ Niveles óptimos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transacciones -->
+      <div class="kpi-card kpi-transacciones">
+        <div class="kpi-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+            <line x1="1" y1="10" x2="23" y2="10" />
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Transacciones</span>
+          <span class="kpi-value">{{ data()!.kpis.totalTransacciones }}
+            <small class="kpi-unit">tickets</small>
+          </span>
+          <div class="kpi-trend" [class.positive]="data()!.kpis.trendTransacciones >= 0"
+            [class.negative]="data()!.kpis.trendTransacciones < 0">
+            <span>{{ getTrendIcon(data()!.kpis.trendTransacciones) }}
+              {{ abs(data()!.kpis.trendTransacciones) }}%</span>
+            <span class="trend-label">· Ticket Prom: Bs. {{ formatCurrency(data()!.kpis.ticketPromedio) }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CAPA 3: GRÁFICOS
+         ============================================================ -->
+    <section class="charts-grid" id="charts-section">
+      <!-- Gráfico de Líneas / Áreas -->
+      <div class="chart-card card-glass">
+        <div class="chart-header">
+          <div>
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+              Tendencia de Ventas
+            </h3>
+            <p class="chart-subtitle">Ingresos diarios en el periodo seleccionado</p>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas #lineChartCanvas *ngIf="data()!.ventasPorDia.length > 0"></canvas>
+          <div class="chart-empty" *ngIf="data()!.ventasPorDia.length === 0">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 3v18h18" /><path d="M18 9l-5 5-4-4-6 6" />
+            </svg>
+            <p>No hay datos de ventas en este periodo</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfico de Barras Horizontales -->
+      <div class="chart-card card-glass">
+        <div class="chart-header">
+          <div>
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
+                <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
+              </svg>
+              Top Productos
+            </h3>
+            <p class="chart-subtitle">Productos más vendidos por unidad</p>
+          </div>
+          <span class="badge-ranking">Top 10</span>
+        </div>
+        <div class="chart-body">
+          <canvas #barChartCanvas *ngIf="data()!.topProductos.length > 0"></canvas>
+          <div class="chart-empty" *ngIf="data()!.topProductos.length === 0">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
+            </svg>
+            <p>Sin datos de productos en este periodo</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CAPA 4: TABLA DE DATOS
+         ============================================================ -->
+    <section class="tabla-section card-glass" id="tabla-section">
+      <!-- Header de tabla -->
+      <div class="tabla-header">
+        <div class="tabla-title">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
+            </svg>
+            Reporte Detallado de Ventas
+          </h3>
+          <span class="tabla-count">{{ totalRegistros() }} registros</span>
+        </div>
+        <div class="tabla-export no-print">
+          <button class="btn-export btn-pdf" (click)="exportarPDF()" id="btn-export-pdf">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9V2h12v7" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+              <rect x="6" y="14" width="12" height="8" />
+            </svg>
+            PDF
+          </button>
+          <button class="btn-export btn-csv" (click)="exportarCSV()" [disabled]="exportando()" id="btn-export-csv">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              *ngIf="!exportando()">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span class="loader-mini" *ngIf="exportando()"></span>
+            {{ exportando() ? 'Exportando...' : 'Excel/CSV' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="tabla-wrapper">
+        <table class="tabla-datos" id="tabla-ventas">
+          <thead>
+            <tr>
+              <th class="th-num">#</th>
+              <th>Fecha</th>
+              <th>N° Venta</th>
+              <th>Cliente</th>
+              <th class="th-right">Productos</th>
+              <th class="th-right">Total</th>
+              <th>Método</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let venta of data()!.tablaVentas.data; let i = index" class="tabla-row">
+              <td class="td-num">{{ ((currentPage() - 1) * pageSize()) + i + 1 }}</td>
+              <td class="td-fecha">{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="td-nro">
+                <span class="nro-venta">{{ venta.numeroVenta }}</span>
+              </td>
+              <td class="td-cliente">
+                <span class="cliente-nombre">{{ venta.clienteNombre }}</span>
+                <span class="cliente-doc" *ngIf="venta.clienteDocumento !== '-'">{{ venta.clienteDocumento }}</span>
+              </td>
+              <td class="td-right td-productos">{{ venta.cantidadProductos }} uds</td>
+              <td class="td-right td-total">
+                <span class="monto">Bs. {{ formatCurrency(venta.total) }}</span>
+              </td>
+              <td class="td-metodo">
+                <span class="badge-metodo">{{ formatMetodoPago(venta.metodoPago) }}</span>
+              </td>
+              <td class="td-estado">
+                <span class="badge-estado" [class]="getEstadoClass(venta.estado)">{{ venta.estado }}</span>
+              </td>
+            </tr>
+            <tr *ngIf="data()!.tablaVentas.data.length === 0">
+              <td colspan="8" class="td-empty">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                No se encontraron ventas con los filtros seleccionados
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="tabla-footer no-print" *ngIf="data()!.tablaVentas.total > 0">
+        <div class="page-info">
+          Mostrando {{ ((currentPage() - 1) * pageSize()) + 1 }}–{{
+          currentPage() * pageSize() > totalRegistros() ? totalRegistros() : currentPage() * pageSize()
+          }} de {{ totalRegistros() }}
+        </div>
+        <div class="page-controls">
+          <button class="page-btn" (click)="irAPagina(1)" [disabled]="currentPage() === 1" title="Primera página">
+            «
+          </button>
+          <button class="page-btn" (click)="irAPagina(currentPage() - 1)" [disabled]="currentPage() === 1">
+            ‹
+          </button>
+          <button *ngFor="let p of paginasVisibles()" class="page-btn" [class.page-active]="p === currentPage()"
+            (click)="irAPagina(p)">
+            {{ p }}
+          </button>
+          <button class="page-btn" (click)="irAPagina(currentPage() + 1)"
+            [disabled]="currentPage() === totalPages()">
+            ›
+          </button>
+          <button class="page-btn" (click)="irAPagina(totalPages())" [disabled]="currentPage() === totalPages()"
+            title="Última página">
+            »
+          </button>
+        </div>
+        <div class="page-size-select">
+          <select [ngModel]="pageSize()" (ngModelChange)="cambiarPageSize($event)">
+            <option [value]="10">10 / pág</option>
+            <option [value]="25">25 / pág</option>
+            <option [value]="50">50 / pág</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

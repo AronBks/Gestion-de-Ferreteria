@@ -1,209 +1,570 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component, OnInit, OnDestroy, AfterViewInit,
+  inject, signal, computed, ViewChild, ElementRef
+} from '@angular/core';
+import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReportesService } from '../../services/reportes.service';
-import { DashboardResponse, TopProductoStatus, VentaDiaStatus } from '../../models/reportes.model';
-import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
-import { SkeletonComponent } from '../../../../shared/components/skeleton/skeleton.component';
-import { HasRoleDirective } from '../../../../core/directives/has-role.directive';
+import {
+  ReporteResponse, ReporteFiltros, CategoriaFiltro
+} from '../../models/reportes.model';
+import { Chart, registerables } from 'chart.js';
+
+// Registrar todos los componentes de Chart.js
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-reportes-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, PageHeaderComponent, SkeletonComponent, HasRoleDirective],
-  template: `
-    <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto flex flex-col gap-6" *hasRole="['ADMIN', 'GERENTE']">
-      <app-page-header 
-        title="Reportes y Analíticas" 
-        subtitle="Visualiza el rendimiento de la ferretería" 
-        icon="analytics"
-      >
-        <div class="flex items-center gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
-          <button [class]="btnTimeClass(7)" (click)="cambiarDias(7)">7D</button>
-          <button [class]="btnTimeClass(30)" (click)="cambiarDias(30)">30D</button>
-          <button [class]="btnTimeClass(90)" (click)="cambiarDias(90)">3M</button>
-        </div>
-      </app-page-header>
-
-      @if (loading()) {
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <app-skeleton class="h-32 rounded-xl"></app-skeleton>
-          <app-skeleton class="h-32 rounded-xl"></app-skeleton>
-          <app-skeleton class="h-32 rounded-xl"></app-skeleton>
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <app-skeleton class="h-96 rounded-xl lg:col-span-2"></app-skeleton>
-          <app-skeleton class="h-96 rounded-xl"></app-skeleton>
-        </div>
-      } @else {
-        <!-- KPI Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <!-- Ingresos -->
-          <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-sm flex flex-col relative overflow-hidden">
-            <span class="material-icons absolute -right-4 -bottom-4 text-8xl opacity-20">attach_money</span>
-            <span class="text-green-100 text-sm font-semibold uppercase tracking-wider mb-1">Ingresos Totales</span>
-            <div class="text-3xl font-bold font-heading">Bs. {{ data()?.resumen?.ingresos | number:'1.2-2' }}</div>
-          </div>
-
-          <!-- Total Transacciones -->
-          <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-sm flex flex-col relative overflow-hidden">
-            <span class="material-icons absolute -right-4 -bottom-4 text-8xl opacity-20">receipt</span>
-            <span class="text-blue-100 text-sm font-semibold uppercase tracking-wider mb-1">Ventas Realizadas</span>
-            <div class="text-3xl font-bold font-heading">{{ data()?.resumen?.totalVentas }} <span class="text-xl font-medium opacity-80">Tkts</span></div>
-          </div>
-
-          <!-- Ticket Promedio -->
-          <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-sm flex flex-col relative overflow-hidden">
-            <span class="material-icons absolute -right-4 -bottom-4 text-8xl opacity-20">shopping_cart</span>
-            <span class="text-purple-100 text-sm font-semibold uppercase tracking-wider mb-1">Ticket Promedio</span>
-            <div class="text-3xl font-bold font-heading">Bs. {{ data()?.resumen?.ticketPromedio | number:'1.2-2' }}</div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          <!-- Chart Column / Ventas dia -->
-          <div class="lg:col-span-2 bg-surface rounded-xl border border-border dark:bg-gray-800 dark:border-gray-700 p-6 flex flex-col shadow-sm">
-            <h3 class="text-lg font-bold font-heading mb-6 dark:text-white flex items-center gap-2">
-              <span class="material-icons text-amber-500">trending_up</span> Evolución de Ingresos
-            </h3>
-            
-            <div class="flex-1 flex items-end gap-2 h-64 mt-auto border-b border-gray-200 dark:border-gray-700 relative">
-              <!-- Y Axis Lines -->
-              <div class="absolute inset-x-0 bottom-1/3 border-b border-dashed border-gray-200 dark:border-gray-700 -z-10"></div>
-              <div class="absolute inset-x-0 bottom-2/3 border-b border-dashed border-gray-200 dark:border-gray-700 -z-10"></div>
-
-              @for (v of data()?.ventasPorDia; track v.fecha) {
-                <div class="relative flex-1 bg-amber-200 dark:bg-amber-900/40 rounded-t-sm hover:opacity-80 transition-opacity group cursor-pointer"
-                     [style.height.%]="getBarHeight(v.total)">
-                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
-                    {{ v.fecha | date:'shortDate' }}: Bs {{ v.total }}<br>
-                    {{ v.transacciones }} ventas
-                  </div>
-                  <div class="absolute top-0 inset-x-0 bg-amber-500 rounded-t-sm" style="height: 4px;"></div>
-                </div>
-              }
-              
-              @if (data()?.ventasPorDia?.length === 0) {
-                <div class="absolute inset-0 flex justify-center items-center text-sm text-gray-400">
-                  No hay datos suficientes en este periodo.
-                </div>
-              }
-            </div>
-            
-            <!-- X Axis Labels (Simple) -->
-            <div class="flex justify-between text-[10px] text-gray-500 font-medium mt-2 uppercase">
-              <span>{{ firstDate() | date:'dd MMM' }}</span>
-              <span>{{ lastDate() | date:'dd MMM' }}</span>
-            </div>
-          </div>
-
-          <!-- Top Productos List -->
-          <div class="bg-surface rounded-xl border border-border dark:bg-gray-800 dark:border-gray-700 p-6 shadow-sm">
-            <h3 class="text-lg font-bold font-heading mb-6 dark:text-white flex items-center gap-2">
-              <span class="material-icons text-amber-500">star</span> Productos Top
-            </h3>
-
-            <div class="flex flex-col gap-4">
-              @for (p of data()?.topProductos; track p.nombre; let i = $index) {
-                <div>
-                  <div class="flex justify-between text-sm mb-1">
-                    <span class="font-semibold text-gray-800 dark:text-gray-200 truncate pr-2">
-                     {{ i + 1 }}. {{ p.nombre }}
-                    </span>
-                    <span class="font-bold text-amber-600 dark:text-amber-400">{{ p.cantidadVendida }}</span>
-                  </div>
-                  
-                  <div class="w-full bg-gray-100 rounded-full h-2.5 dark:bg-gray-700 overflow-hidden">
-                    <div class="bg-amber-500 h-2.5 rounded-full relative" [style.width.%]="getTopProductWidth(p.cantidadVendida)">
-                      <div class="absolute inset-0 bg-white/20 animate-[pulse_2s_ease-in-out_infinite]"></div>
-                    </div>
-                  </div>
-                  <p class="text-[10px] text-gray-500 mt-0.5 text-right">Bs. {{ p.ingresos | number:'1.2-2' }}</p>
-                </div>
-              }
-
-              @if (data()?.topProductos?.length === 0) {
-                 <div class="text-center py-6 text-sm text-gray-400">
-                  Sin ventas top aún.
-                </div>
-              }
-            </div>
-
-          </div>
-
-        </div>
-      }
-
-    </div>
-  `
+  imports: [CommonModule, FormsModule],
+  templateUrl: './reportes-dashboard.component.html',
+  styleUrls: ['./reportes-dashboard.component.scss'],
+  providers: [DecimalPipe, DatePipe]
 })
-export class ReportesDashboardComponent implements OnInit {
+export class ReportesDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private reportesService = inject(ReportesService);
+  private decimalPipe = inject(DecimalPipe);
 
+  // ============================================================
+  // CANVAS REFS para Chart.js
+  // ============================================================
+  @ViewChild('lineChartCanvas') lineChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('barChartCanvas') barChartRef!: ElementRef<HTMLCanvasElement>;
+
+  private lineChart?: Chart;
+  private barChart?: Chart;
+  private themeObserver?: MutationObserver;
+
+  // ============================================================
+  // STATE — Signals
+  // ============================================================
   loading = signal(true);
-  dias = signal(30);
-  data = signal<DashboardResponse | null>(null);
+  data = signal<ReporteResponse | null>(null);
+  categorias = signal<CategoriaFiltro[]>([]);
+  errorMsg = signal('');
 
-  // Computados
-  maxVentaTotal = computed(() => {
-    const list = this.data()?.ventasPorDia;
-    if (!list || list.length === 0) return 1;
-    return Math.max(...list.map(v => v.total));
+  // Filtros — NO se disparan automáticamente, solo con "Aplicar"
+  rangoActivo = signal<string>('30d');
+  filtroFechaInicio = signal('');
+  filtroFechaFin = signal('');
+  filtroCategoria = signal('');
+  filtroMetodoPago = signal('');
+  mostrarFechasCustom = signal(false);
+
+  // Paginación
+  currentPage = signal(1);
+  pageSize = signal(10);
+
+  // Exportando
+  exportando = signal(false);
+
+  // Métodos de pago disponibles
+  metodosPago = [
+    { value: '', label: 'Todos' },
+    { value: 'EFECTIVO', label: 'Efectivo' },
+    { value: 'TARJETA_DEBITO', label: 'Tarjeta Débito' },
+    { value: 'TARJETA_CREDITO', label: 'Tarjeta Crédito' },
+    { value: 'TRANSFERENCIA', label: 'Transferencia' },
+    { value: 'CHEQUE', label: 'Cheque' },
+  ];
+
+  // ============================================================
+  // COMPUTED
+  // ============================================================
+  totalPages = computed(() => this.data()?.tablaVentas?.totalPages || 1);
+  totalRegistros = computed(() => this.data()?.tablaVentas?.total || 0);
+
+  paginasVisibles = computed(() => {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const pages: number[] = [];
+    const maxVisible = 5;
+    let start = Math.max(1, current - Math.floor(maxVisible / 2));
+    let end = Math.min(total, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
   });
 
-  maxTopProduct = computed(() => {
-    const list = this.data()?.topProductos;
-    if (!list || list.length === 0) return 1;
-    return Math.max(...list.map(p => p.cantidadVendida));
+  rangoLabel = computed(() => {
+    const f = this.data()?.filtrosAplicados;
+    if (!f) return '';
+    return `${this.formatDateLabel(f.fechaInicio)} — ${this.formatDateLabel(f.fechaFin)}`;
   });
 
-  firstDate = computed(() => {
-    const arr = this.data()?.ventasPorDia || [];
-    return arr.length > 0 ? arr[0].fecha : null;
-  });
-
-  lastDate = computed(() => {
-    const arr = this.data()?.ventasPorDia || [];
-    return arr.length > 0 ? arr[arr.length - 1].fecha : null;
-  });
-
-  ngOnInit() {
-    this.cargarDatos();
+  // ============================================================
+  // LIFECYCLE
+  // ============================================================
+  ngOnInit(): void {
+    this.cargarCategorias();
+    this.aplicarRangoRapido('30d');
   }
 
-  cambiarDias(d: number) {
-    this.dias.set(d);
-    this.cargarDatos();
-  }
-
-  cargarDatos() {
-    this.loading.set(true);
-    this.reportesService.getDashboard(this.dias()).subscribe({
-      next: (res) => {
-        this.data.set(res);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
+  ngAfterViewInit(): void {
+    // Observar cambios de tema para actualizar Chart.js
+    this.themeObserver = new MutationObserver(() => {
+      this.actualizarTemasGraficos();
+    });
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
     });
   }
 
-  btnTimeClass(d: number) {
-    const isActivo = this.dias() === d;
-    return `px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
-      isActivo 
-        ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-400' 
-        : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white'
-    }`;
+  ngOnDestroy(): void {
+    this.lineChart?.destroy();
+    this.barChart?.destroy();
+    this.themeObserver?.disconnect();
   }
 
-  getBarHeight(total: number) {
-    const h = (total / this.maxVentaTotal()) * 100;
-    return Math.max(h, 2); // al menos 2% de alto para verse
+  // ============================================================
+  // CARGA DE DATOS
+  // ============================================================
+  private cargarCategorias(): void {
+    this.reportesService.getCategorias().subscribe({
+      next: (cats) => this.categorias.set(cats),
+      error: () => this.categorias.set([])
+    });
   }
 
-  getTopProductWidth(vendidos: number) {
-    const w = (vendidos / this.maxTopProduct()) * 100;
-    return Math.max(w, 2); 
+  cargarDatos(): void {
+    this.loading.set(true);
+    this.errorMsg.set('');
+
+    const filtros = this.construirFiltros();
+    filtros.page = this.currentPage();
+    filtros.limit = this.pageSize();
+
+    this.reportesService.getReportesData(filtros).subscribe({
+      next: (res) => {
+        this.data.set(res);
+        this.loading.set(false);
+        // Render charts after data loads
+        setTimeout(() => this.renderizarGraficos(), 100);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.errorMsg.set('Error al cargar los datos. Verifica la conexión con el servidor.');
+        console.error('[Reportes] Error:', err);
+      }
+    });
+  }
+
+  private construirFiltros(): ReporteFiltros {
+    const filtros: ReporteFiltros = {};
+
+    if (this.filtroFechaInicio()) filtros.fechaInicio = this.filtroFechaInicio();
+    if (this.filtroFechaFin()) filtros.fechaFin = this.filtroFechaFin();
+    if (this.filtroCategoria()) filtros.categoriaId = this.filtroCategoria();
+    if (this.filtroMetodoPago()) filtros.metodoPago = this.filtroMetodoPago();
+
+    return filtros;
+  }
+
+  // ============================================================
+  // FILTROS — Acciones del usuario
+  // ============================================================
+  aplicarRangoRapido(rango: string): void {
+    this.rangoActivo.set(rango);
+    this.mostrarFechasCustom.set(rango === 'custom');
+
+    const hoy = new Date();
+    const fin = this.formatDate(hoy);
+    let inicio = '';
+
+    switch (rango) {
+      case 'hoy':
+        inicio = fin;
+        break;
+      case '7d':
+        inicio = this.formatDate(this.restarDias(hoy, 7));
+        break;
+      case '30d':
+        inicio = this.formatDate(this.restarDias(hoy, 30));
+        break;
+      case '90d':
+        inicio = this.formatDate(this.restarDias(hoy, 90));
+        break;
+      case 'custom':
+        // No auto-cargar, esperar a que el usuario ponga fechas y pulse Aplicar
+        return;
+    }
+
+    this.filtroFechaInicio.set(inicio);
+    this.filtroFechaFin.set(fin);
+    this.currentPage.set(1);
+    this.cargarDatos();
+  }
+
+  aplicarFiltros(): void {
+    this.currentPage.set(1);
+    this.cargarDatos();
+  }
+
+  limpiarFiltros(): void {
+    this.filtroCategoria.set('');
+    this.filtroMetodoPago.set('');
+    this.mostrarFechasCustom.set(false);
+    this.aplicarRangoRapido('30d');
+  }
+
+  // ============================================================
+  // PAGINACIÓN
+  // ============================================================
+  irAPagina(page: number): void {
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
+    this.cargarDatos();
+  }
+
+  cambiarPageSize(size: number): void {
+    this.pageSize.set(size);
+    this.currentPage.set(1);
+    this.cargarDatos();
+  }
+
+  // ============================================================
+  // EXPORTACIÓN
+  // ============================================================
+  exportarCSV(): void {
+    this.exportando.set(true);
+    const filtros = this.construirFiltros();
+
+    this.reportesService.getExportData(filtros).subscribe({
+      next: (res) => {
+        // Generar CSV
+        const headers = res.headers.join(',');
+        const rows = res.rows.map(r =>
+          [
+            r.numeroVenta, r.fecha, `"${r.cliente}"`, r.documento,
+            r.subtotal, r.descuento, r.total, r.metodoPago,
+            r.estado, `"${r.vendedor}"`, `"${r.productos}"`
+          ].join(',')
+        );
+        const csv = [headers, ...rows].join('\n');
+
+        // Descargar
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `reporte_ventas_${this.filtroFechaInicio()}_${this.filtroFechaFin()}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+
+        this.exportando.set(false);
+      },
+      error: () => {
+        this.exportando.set(false);
+        alert('Error al exportar los datos.');
+      }
+    });
+  }
+
+  exportarPDF(): void {
+    window.print();
+  }
+
+  // ============================================================
+  // CHART.JS — Renderizado y configuración
+  // ============================================================
+  private renderizarGraficos(): void {
+    this.renderLineChart();
+    this.renderBarChart();
+  }
+
+  private renderLineChart(): void {
+    if (!this.lineChartRef?.nativeElement) return;
+    const d = this.data();
+    if (!d || !d.ventasPorDia.length) return;
+
+    // Destruir instancia previa
+    this.lineChart?.destroy();
+
+    const ctx = this.lineChartRef.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    const colors = this.getThemeColors();
+    const labels = d.ventasPorDia.map(v => {
+      const date = new Date(v.fecha + 'T00:00:00');
+      return date.toLocaleDateString('es-BO', { day: 'numeric', month: 'short' });
+    });
+    const values = d.ventasPorDia.map(v => v.total);
+    const txns = d.ventasPorDia.map(v => v.transacciones);
+
+    // Gradiente de fondo
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(245, 158, 11, 0.25)');
+    gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
+
+    this.lineChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Ingresos (Bs)',
+          data: values,
+          borderColor: '#F59E0B',
+          backgroundColor: gradient,
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointHoverRadius: 7,
+          pointBackgroundColor: '#F59E0B',
+          pointBorderColor: colors.cardBg,
+          pointBorderWidth: 2,
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#F59E0B',
+          pointHoverBorderWidth: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: colors.tooltipBg,
+            titleColor: colors.tooltipText,
+            bodyColor: colors.tooltipText,
+            borderColor: colors.tooltipBorder,
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            titleFont: { family: "'DM Sans', sans-serif", weight: 'bold', size: 13 },
+            bodyFont: { family: "'DM Sans', sans-serif", size: 12 },
+            displayColors: false,
+            callbacks: {
+              title: (items) => {
+                const idx = items[0].dataIndex;
+                const v = d.ventasPorDia[idx];
+                const date = new Date(v.fecha + 'T00:00:00');
+                return date.toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long' });
+              },
+              label: (item) => {
+                const idx = item.dataIndex;
+                return [
+                  `Ingresos: Bs. ${this.decimalPipe.transform(values[idx], '1.2-2')}`,
+                  `Transacciones: ${txns[idx]}`
+                ] as any;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              color: colors.textColor,
+              font: { family: "'DM Sans', sans-serif", size: 11 },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 12,
+            },
+            border: { color: colors.gridColor }
+          },
+          y: {
+            grid: {
+              color: colors.gridColor,
+            },
+            ticks: {
+              color: colors.textColor,
+              font: { family: "'DM Sans', sans-serif", size: 11 },
+              callback: (val) => {
+                const n = Number(val);
+                return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : n.toString();
+              },
+              padding: 8,
+            },
+            border: { display: false },
+            beginAtZero: true,
+          }
+        },
+        animation: {
+          duration: 800,
+          easing: 'easeInOutQuart',
+        }
+      }
+    });
+  }
+
+  private renderBarChart(): void {
+    if (!this.barChartRef?.nativeElement) return;
+    const d = this.data();
+    if (!d || !d.topProductos.length) return;
+
+    this.barChart?.destroy();
+
+    const ctx = this.barChartRef.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    const colors = this.getThemeColors();
+    const labels = d.topProductos.map(p => this.truncarTexto(p.nombre, 22));
+    const values = d.topProductos.map(p => p.cantidadVendida);
+    const ingresos = d.topProductos.map(p => p.ingresos);
+
+    // Colores degradados por ranking
+    const barColors = [
+      '#F59E0B', '#F6A723', '#F7B03B', '#F8B953', '#F9C26B',
+      '#FACB83', '#FBD49B', '#FCDDB3', '#FDE6CB', '#FEEFE3'
+    ];
+
+    this.barChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Unidades Vendidas',
+          data: values,
+          backgroundColor: barColors.slice(0, values.length),
+          borderColor: barColors.slice(0, values.length).map(c => c),
+          borderWidth: 0,
+          borderRadius: 6,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: colors.tooltipBg,
+            titleColor: colors.tooltipText,
+            bodyColor: colors.tooltipText,
+            borderColor: colors.tooltipBorder,
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            titleFont: { family: "'DM Sans', sans-serif", weight: 'bold', size: 13 },
+            bodyFont: { family: "'DM Sans', sans-serif", size: 12 },
+            displayColors: false,
+            callbacks: {
+              title: (items) => {
+                const idx = items[0].dataIndex;
+                return d.topProductos[idx].nombre;
+              },
+              label: (item) => {
+                const idx = item.dataIndex;
+                return [
+                  `Vendidos: ${values[idx]} uds`,
+                  `Ingresos: Bs. ${this.decimalPipe.transform(ingresos[idx], '1.2-2')}`,
+                ] as any;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: colors.gridColor },
+            ticks: {
+              color: colors.textColor,
+              font: { family: "'DM Sans', sans-serif", size: 11 },
+              stepSize: 1,
+            },
+            border: { display: false },
+            beginAtZero: true,
+          },
+          y: {
+            grid: { display: false },
+            ticks: {
+              color: colors.textColor,
+              font: { family: "'DM Sans', sans-serif", size: 11, weight: 'bold' },
+              padding: 8,
+            },
+            border: { color: colors.gridColor },
+          }
+        },
+        animation: {
+          duration: 1000,
+          easing: 'easeInOutQuart',
+        }
+      }
+    });
+  }
+
+  // ============================================================
+  // TEMA — Colores dinámicos para Chart.js
+  // ============================================================
+  private getThemeColors() {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+      textColor: dark ? '#94A3B8' : '#64748B',
+      gridColor: dark ? 'rgba(45, 55, 72, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+      tooltipBg: dark ? '#1E2333' : '#FFFFFF',
+      tooltipText: dark ? '#F1F5F9' : '#0F172A',
+      tooltipBorder: dark ? '#2D3748' : '#E2E8F0',
+      cardBg: dark ? '#1E2333' : '#FFFFFF',
+    };
+  }
+
+  private actualizarTemasGraficos(): void {
+    // Re-renderizar con nuevos colores cuando cambia el tema
+    if (this.data()) {
+      setTimeout(() => this.renderizarGraficos(), 50);
+    }
+  }
+
+  // ============================================================
+  // UTILIDADES
+  // ============================================================
+  private formatDate(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  private restarDias(date: Date, dias: number): Date {
+    const d = new Date(date);
+    d.setDate(d.getDate() - dias);
+    return d;
+  }
+
+  private truncarTexto(text: string, max: number): string {
+    return text.length > max ? text.substring(0, max) + '…' : text;
+  }
+
+  formatDateLabel(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('es-BO', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  formatCurrency(value: number): string {
+    return this.decimalPipe.transform(value, '1.2-2') || '0.00';
+  }
+
+  formatMetodoPago(metodo: string): string {
+    const map: Record<string, string> = {
+      'EFECTIVO': 'Efectivo',
+      'TARJETA_DEBITO': 'T. Débito',
+      'TARJETA_CREDITO': 'T. Crédito',
+      'TRANSFERENCIA': 'Transferencia',
+      'CHEQUE': 'Cheque',
+    };
+    return map[metodo] || metodo;
+  }
+
+  getEstadoClass(estado: string): string {
+    const map: Record<string, string> = {
+      'COMPLETADA': 'estado-completada',
+      'PENDIENTE': 'estado-pendiente',
+      'CANCELADA': 'estado-cancelada',
+      'DEVUELTA': 'estado-devuelta',
+    };
+    return map[estado] || '';
+  }
+
+  getTrendIcon(value: number): string {
+    return value >= 0 ? '↑' : '↓';
+  }
+
+  abs(value: number): number {
+    return Math.abs(value);
   }
 }

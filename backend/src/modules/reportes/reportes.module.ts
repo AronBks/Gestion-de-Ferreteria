@@ -5,10 +5,11 @@ import { ReportesService } from './reportes.service';
 import { Venta } from '../ventas/entities/venta.entity';
 import { DetalleVenta } from '../ventas/entities/detalle-venta.entity';
 import { Producto } from '../productos/producto.entity';
+import { Categoria } from '../categorias/categoria.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Venta, DetalleVenta, Producto])
+    TypeOrmModule.forFeature([Venta, DetalleVenta, Producto, Categoria])
   ],
   controllers: [ReportesController],
   providers: [ReportesService],
