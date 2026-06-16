@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { AuthService } from '../../services/auth.service';
+import { Role, ROLE_LABELS } from '../../models/auth.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -12,6 +13,7 @@ interface NavItem {
   path: string;
   icon: string;
   badge?: number;
+  roles: Role[];  // Roles que pueden ver este item
 }
 
 @Component({
@@ -47,7 +49,7 @@ interface NavItem {
           <div class="nav-label" *ngIf="!isCollapsed">Principal</div>
           <div class="nav-items">
             <a 
-              *ngFor="let item of navItems"
+              *ngFor="let item of visibleNavItems()"
               [routerLink]="item.path"
               routerLinkActive="active"
               [routerLinkActiveOptions]="{ exact: true }"
@@ -77,10 +79,10 @@ interface NavItem {
 
         <!-- User Section -->
         <div class="user-section" *ngIf="!isCollapsed">
-          <div class="user-avatar">A</div>
+          <div class="user-avatar">{{ userInitial() }}</div>
           <div class="user-info">
-            <p class="user-name">Administrador</p>
-            <p class="user-email">admin@ferreteria.bo</p>
+            <p class="user-name">{{ userName() }}</p>
+            <p class="user-email">{{ userRoleLabel() }}</p>
           </div>
         </div>
 
@@ -578,12 +580,34 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isDarkMode = false;
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', path: '/dashboard', icon: '📊' },
-    { label: 'Productos', path: '/dashboard/productos', icon: '📦' },
-    { label: 'Ventas', path: '/dashboard/ventas', icon: '💳' },
-    { label: 'Usuarios', path: '/dashboard/usuarios', icon: '👥' },
-    { label: 'Reportes', path: '/dashboard/reportes', icon: '📈' }
+    { label: 'Dashboard',  path: '/dashboard',            icon: '📊', roles: [Role.ADMIN, Role.GERENTE, Role.AUDITOR] },
+    { label: 'Productos',  path: '/dashboard/productos',   icon: '📦', roles: [Role.ADMIN, Role.GERENTE, Role.VENDEDOR, Role.ALMACENERO, Role.AUDITOR] },
+    { label: 'Ventas',     path: '/dashboard/ventas',       icon: '💳', roles: [Role.ADMIN, Role.GERENTE, Role.VENDEDOR] },
+    { label: 'Usuarios',   path: '/dashboard/usuarios',     icon: '👥', roles: [Role.ADMIN, Role.GERENTE, Role.AUDITOR] },
+    { label: 'Reportes',   path: '/dashboard/reportes',     icon: '📈', roles: [Role.ADMIN, Role.GERENTE, Role.AUDITOR] },
   ];
+
+  /** Computed: filtra navItems según el rol del usuario autenticado */
+  visibleNavItems = computed(() => {
+    const role = this.authService.userRole();
+    if (!role) return [];
+    return this.navItems.filter(item => item.roles.includes(role));
+  });
+
+  /** Computed: nombre del usuario para el sidebar */
+  userName = computed(() => this.authService.currentUser()?.nombre ?? 'Usuario');
+
+  /** Computed: inicial del nombre para el avatar */
+  userInitial = computed(() => {
+    const name = this.authService.currentUser()?.nombre;
+    return name ? name.charAt(0).toUpperCase() : 'U';
+  });
+
+  /** Computed: etiqueta del rol para mostrar debajo del nombre */
+  userRoleLabel = computed(() => {
+    const role = this.authService.userRole();
+    return role ? ROLE_LABELS[role] : '';
+  });
 
   private destroy$ = new Subject<void>();
 

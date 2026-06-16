@@ -19,6 +19,7 @@ import { EnviarFacturaDto } from './dto/enviar-factura.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../usuarios/usuario.entity';
 
 @ApiTags('Facturación')
 @Controller('facturacion')
@@ -31,7 +32,7 @@ export class FacturacionController {
   @Post('emitir')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles('ADMIN', 'GERENTE', 'VENDEDOR')
+  @Roles(UserRole.ADMIN, UserRole.GERENTE, UserRole.VENDEDOR)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Emitir factura electrónica SIAT para una venta' })
   @ApiResponse({ status: 201, description: 'Factura emitida exitosamente' })
@@ -78,7 +79,7 @@ export class FacturacionController {
   @Patch(':id/anular')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles('ADMIN', 'GERENTE')
+  @Roles(UserRole.ADMIN, UserRole.GERENTE)
   @ApiOperation({ summary: 'Anular una factura electrónica emitida' })
   @ApiResponse({ status: 200, description: 'Factura anulada exitosamente' })
   @ApiResponse({ status: 400, description: 'Factura no puede ser anulada' })
@@ -96,7 +97,7 @@ export class FacturacionController {
   @Post(':id/enviar')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles('ADMIN', 'GERENTE', 'VENDEDOR')
+  @Roles(UserRole.ADMIN, UserRole.GERENTE, UserRole.VENDEDOR)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Enviar factura al cliente por WhatsApp o Email' })
   @ApiResponse({ status: 200, description: 'Resultado del envío' })

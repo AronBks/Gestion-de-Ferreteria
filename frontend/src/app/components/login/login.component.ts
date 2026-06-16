@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { Role } from '../../models/auth.model';
 
 @Component({
   selector: 'app-login',
@@ -25,8 +26,14 @@ export class LoginComponent implements OnInit {
     private authService: AuthService,
     private router: Router
   ) {
+    // Si ya está autenticado, redirigir a su dashboard correspondiente
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/dashboard']);
+      const role = this.authService.userRole();
+      if (role) {
+        this.router.navigate([this.authService.getDefaultRouteForRole(role)]);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
     }
   }
 
@@ -64,7 +71,10 @@ export class LoginComponent implements OnInit {
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
         this.loading = false;
-        this.router.navigate(['/dashboard']);
+        // Redirección inteligente basada en el rol del usuario
+        const role = response.user?.rol as Role;
+        const targetRoute = this.authService.getDefaultRouteForRole(role);
+        this.router.navigate([targetRoute]);
       },
       error: (err) => {
         this.loading = false;

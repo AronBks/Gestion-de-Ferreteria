@@ -1,30 +1,27 @@
-import { Injectable, PLATFORM_ID, inject } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { isPlatformBrowser } from '@angular/common';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthGuard implements CanActivate {
-  private platformId = inject(PLATFORM_ID);
+/**
+ * authGuard — Guard funcional de autenticación (CanActivateFn).
+ *
+ * Reemplaza el AuthGuard basado en clase que generaba tokens falsos.
+ * Ahora verifica autenticación real a través del Signal `isLoggedIn`.
+ *
+ * Uso en rutas:
+ *   canActivate: [authGuard]
+ *
+ * Si no hay sesión activa → redirige a /login.
+ */
+export const authGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
-  constructor(private router: Router) { }
-
-  canActivate(): boolean {
-    // TODO: En producción, validar token real
-    // Por ahora, permitir acceso para testing
-    if (isPlatformBrowser(this.platformId)) {
-      const token = localStorage.getItem('auth_token');
-      
-      // Si no hay token, crear uno temporal para testing
-      if (!token || token === 'undefined' || token === 'null') {
-        localStorage.setItem('auth_token', 'test_token_' + Date.now());
-        return true;
-      }
-      
-      return true;
-    }
-
+  if (authService.isLoggedIn()) {
     return true;
   }
-}
+
+  // Sin sesión → redirigir al login
+  router.navigate(['/login']);
+  return false;
+};

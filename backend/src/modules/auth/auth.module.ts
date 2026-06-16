@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { JwtAuthGuard } from './guards/jwt.guard';
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => {
         const secret = configService.get<string>('JWT_SECRET') || 'secret-key';
-        const expiresIn = configService.get<string>('JWT_EXPIRATION') || '24h';
+        const expiresIn = configService.get<string>('JWT_EXPIRATION') || '2h';
         
         return {
           secret,
@@ -27,8 +28,8 @@ import { JwtAuthGuard } from './guards/jwt.guard';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
   controllers: [AuthController],
-  exports: [JwtAuthGuard, AuthService],
+  exports: [JwtAuthGuard, RolesGuard, AuthService],
 })
 export class AuthModule {}

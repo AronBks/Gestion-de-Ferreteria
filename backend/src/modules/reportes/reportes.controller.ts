@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { UserRole } from '../usuarios/usuario.entity';
 import { Response } from 'express';
 
 @ApiTags('Reportes')
@@ -17,7 +18,7 @@ export class ReportesController {
   // GET /reportes/dashboard — Dashboard original (compatibilidad)
   // ============================================================
   @Get('dashboard')
-  @Roles('ADMIN', 'GERENTE')
+  @Roles(UserRole.ADMIN, UserRole.GERENTE, UserRole.AUDITOR)
   @ApiOperation({ summary: 'Obtener métricas y KPIs del Dashboard' })
   getDashboardStats(@Query('dias') dias?: string) {
     const d = dias ? parseInt(dias) : 30; // Por defecto últimos 30 días
@@ -28,7 +29,7 @@ export class ReportesController {
   // GET /reportes/modulo — Módulo de Reportes con filtros avanzados
   // ============================================================
   @Get('modulo')
-  @Roles('ADMIN', 'GERENTE')
+  @Roles(UserRole.ADMIN, UserRole.GERENTE, UserRole.AUDITOR)
   @ApiOperation({ summary: 'Datos completos del módulo de Reportes y Estadísticas' })
   @ApiQuery({ name: 'fechaInicio', required: false, description: 'Fecha inicio (YYYY-MM-DD)' })
   @ApiQuery({ name: 'fechaFin', required: false, description: 'Fecha fin (YYYY-MM-DD)' })
@@ -58,7 +59,7 @@ export class ReportesController {
   // GET /reportes/exportar — Datos para exportación CSV
   // ============================================================
   @Get('exportar')
-  @Roles('ADMIN', 'GERENTE')
+  @Roles(UserRole.ADMIN, UserRole.GERENTE, UserRole.AUDITOR)
   @ApiOperation({ summary: 'Exportar datos de ventas en formato para CSV' })
   @ApiQuery({ name: 'fechaInicio', required: false })
   @ApiQuery({ name: 'fechaFin', required: false })
@@ -82,7 +83,7 @@ export class ReportesController {
   // GET /reportes/categorias — Categorías para dropdown de filtros
   // ============================================================
   @Get('categorias')
-  @Roles('ADMIN', 'GERENTE')
+  @Roles(UserRole.ADMIN, UserRole.GERENTE, UserRole.AUDITOR)
   @ApiOperation({ summary: 'Obtener categorías para filtro de reportes' })
   getCategorias() {
     return this.reportesService.getCategoriasParaFiltro();

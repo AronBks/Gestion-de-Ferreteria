@@ -16,21 +16,21 @@ export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
   @Get()
-  @Roles('ADMIN', 'GERENTE', 'AUDITOR')
+  @Roles(UserRole.ADMIN, UserRole.GERENTE, UserRole.AUDITOR)
   @ApiOperation({ summary: 'Listar usuarios paginados o filtrados' })
   findAll(@Query('rol') rol: string, @Query('estado') estado: string) {
     return this.usuariosService.findAll(rol, estado);
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'GERENTE', 'AUDITOR')
+  @Roles(UserRole.ADMIN, UserRole.GERENTE, UserRole.AUDITOR)
   @ApiOperation({ summary: 'Detalle de un usuario' })
   findOne(@Param('id') id: string) {
     return this.usuariosService.findById(id);
   }
 
   @Post()
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Crear usuario' })
   create(@Body() createUsuarioDto: CreateUsuarioDto, @Request() req) {
     if ((createUsuarioDto.rol === UserRole.ADMIN || createUsuarioDto.rol === UserRole.GERENTE) && req.user.rol !== UserRole.ADMIN) {
@@ -40,7 +40,7 @@ export class UsuariosController {
   }
 
   @Patch(':id')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Actualizar datos de usuario' })
   update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
     if (updateUsuarioDto.rol) {
@@ -50,21 +50,21 @@ export class UsuariosController {
   }
 
   @Patch(':id/estado')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Suspender o activar usuario' })
   updateEstado(@Param('id') id: string, @Body() updateEstadoDto: UpdateUsuarioEstadoDto) {
     return this.usuariosService.updateEstado(id, updateEstadoDto.estado);
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Eliminar usuario lógicamente' })
   remove(@Param('id') id: string) {
     return this.usuariosService.remove(id);
   }
 
   @Post(':id/reset-password')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Reiniciar clave a temporal' })
   resetPassword(@Param('id') id: string) {
     return this.usuariosService.resetPassword(id);
