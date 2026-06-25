@@ -8,6 +8,7 @@
 
 ## Documentación Técnica
 
+- [ANALISIS_SISTEMA.md](ANALISIS_SISTEMA.md) - Análisis técnico detallado del sistema
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Arquitectura del sistema
 - [DATABASE_DIAGRAM.md](DATABASE_DIAGRAM.md) - Diagrama ER + tablas
 - [BUSINESS_FLOWS.md](BUSINESS_FLOWS.md) - Flujos de negocio

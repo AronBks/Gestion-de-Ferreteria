@@ -1,241 +1,80 @@
-# 🏗️ Sistema POS Ferretería Bolivia
+# 🇧🇴 LOCALIZACIÓN BOLIVIA - FERRETERÍA POS
 
-## 📋 Resumen
-Sistema de Punto de Venta especializado para ferreterías en Bolivia, con soporte completo para **Bolivianos (Bs.)** como moneda oficial.
-
----
-
-## 🇧🇴 Localización Bolivia
-
-### Configuración Regional
-- **País**: Bolivia
-- **Código ISO**: BO
-- **Moneda**: Boliviano (Bs.)
-- **Código de Moneda**: BOB
-- **Zona Horaria**: America/La_Paz
-- **Idioma**: Español de Bolivia (es-BO)
-
-### Formato de Números
-- **Separador Decimal**: `,` (coma)
-- **Separador de Miles**: `.` (punto)
-- **Ejemplo**: Bs. 1.000,50
-
-### Regulaciones Fiscales
-- **IVA (Impuesto al Valor Agregado)**: 13%
-- **Retención IVA**: 13%
-- **Impuesto a las Transacciones (IT)**: 3%
+Este documento describe la localización del sistema POS de Ferretería específicamente adaptada a la normativa fiscal y comercial de **Bolivia**.
 
 ---
 
-## 🏪 Características del Sistema
+## ⚙️ Configuración Regional Integrada
 
-### Backend (NestJS)
-✅ API REST con autenticación JWT
-✅ CRUD completo de productos
-✅ Gestión de usuarios con roles
-✅ CORS habilitado para frontend
-✅ Configuración regional para Bolivia
-
-### Frontend (Angular)
-✅ Login profesional con gradiente
-✅ Dashboard con sidebar navegable
-✅ Tabla de productos con paginación
-✅ Formateo de moneda en Bs. (Bolivianos)
-✅ Responsive design para móvil
-
-### Base de Datos (PostgreSQL)
-✅ 13 tablas optimizadas
-✅ 6 productos de prueba
-✅ Admin pre-configurado
+El sistema está configurado por defecto con los siguientes parámetros bolivianos:
+- **Moneda**: Boliviano (Bs. / BOB)
+- **Zona Horaria**: `America/La_Paz` (GMT-4)
+- **Formato Numérico**: `es-BO` (Separador decimal: `,` coma | Separador de miles: `.` punto)
+  - Ejemplo en interfaz: **Bs. 1.500,50**
+- **Pipe del Frontend**: Pipe dedicado (`currency-bolivia.pipe.ts`) para formatear montos automáticamente con el prefijo `Bs.` y dos decimales.
 
 ---
 
-## 🚀 Inicio Rápido
+## ⚡ Facturación Electrónica SIAT (Impuestos Nacionales)
 
-### Backend
-```bash
-cd backend
-npm install
-npm run start:dev
-# Puerto: http://localhost:3000
-```
+El sistema cuenta con un módulo completo de facturación electrónica (`FacturacionModule` en backend, `/facturacion/emitir`) que interactúa con los servidores de la **Agencia de Impuestos Nacionales de Bolivia**.
 
-### Frontend
-```bash
-cd frontend
-npm install
-npm start
-# Puerto: http://localhost:4200
-```
+### 1. Flujo de Emisión de Facturas
+1. Al consolidarse una venta en la interfaz POS (ADMIN, GERENTE o VENDEDOR), se habilita el botón **Emitir Factura**.
+2. El sistema valida el **NIT/CI** del cliente y el **Código de Cliente** en la base de datos.
+3. Se realiza una petición SOAP/REST al Web Service del SIAT enviando la información estructurada de la venta.
+4. El SIAT devuelve el estado de aceptación de la factura, el **CUF** (Código Único de Factura) y el **CUFD** (Código Único de Facturación Diaria).
+5. Se almacena la factura con estado `ACEPTADA` y se asocia de forma inmutable al registro de venta.
 
-### Credenciales de Prueba
-- **Email**: admin@ferreteria.com
-- **Contraseña**: Admin123
+### 2. Formatos Fiscales Generados
+- **Representación Gráfica (PDF)**: Formato estándar de factura que contiene el código QR fiscal, leyenda autorizada por el SIAT, firma digital del emisor y desglose de importes.
+- **Archivo XML**: Documento estructurado con firma digital del desarrollador homologado enviado directamente al SIAT.
 
----
+### 3. Anulación de Facturas (`PATCH /facturacion/:id/anular`)
+Las facturas emitidas por error o devolución de mercadería se anulan directamente desde el panel de reportes (ADMIN o GERENTE).
+- Requiere seleccionar un **Motivo de Anulación** homologado por el SIAT (ej. Datos del cliente incorrectos, devolución total).
+- Se envía la firma de anulación al SIAT, revirtiendo el estado contable de la venta y restituyendo el stock físico de productos automáticamente.
 
-## 💰 Moneda en Bolivia
-
-### Ejemplos de Formato
-| Valor | Formato |
-|-------|---------|
-| 100 | Bs. 100,00 |
-| 1500 | Bs. 1.500,00 |
-| 25.50 | Bs. 25,50 |
-| 1000000 | Bs. 1.000.000,00 |
-
-### Uso en el Sistema
-- Todos los precios están en Bolivianos
-- Cálculo automático de márgenes de ganancia
-- Conversión de moneda lista para futuros desarrollos
+### 4. Envío Automático por WhatsApp / Email
+Una vez aprobada la factura por impuestos nacionales, se invoca a `EnvioFacturaService`:
+- **WhatsApp**: Envío directo del link de descarga de la factura (PDF) y el archivo XML al número de teléfono del cliente registrado en la venta.
+- **Email**: Envío con plantilla corporativa y adjuntos contables.
 
 ---
 
-## 📁 Estructura de Archivos
+## 📊 Impuestos Aplicados
+
+El sistema de caja y compras calcula de manera interna las siguientes tasas impositivas bolivianas:
+- **IVA (Impuesto al Valor Agregado)**: **13%** (Incluido en el precio de venta al público).
+- **IT (Impuesto a las Transacciones)**: **3%** (Cálculo interno contable para declaraciones de gastos de la ferretería).
+
+---
+
+## 📁 Estructura del Módulo de Facturación
 
 ```
-Ferreteria/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   │   └── country.config.ts          # Config Bolivia
-│   │   ├── modules/
-│   │   │   ├── auth/
-│   │   │   ├── productos/
-│   │   │   └── usuarios/
-│   │   └── main.ts                        # CORS habilitado
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── config/
-│   │   │   │   └── currency.config.ts     # Config moneda Bs.
-│   │   │   ├── pipes/
-│   │   │   │   └── currency-bolivia.pipe.ts
-│   │   │   ├── components/
-│   │   │   │   ├── login/
-│   │   │   │   ├── dashboard/
-│   │   │   │   ├── productos/
-│   │   │   │   └── usuarios/
-│   │   │   ├── services/
-│   │   │   │   ├── auth.service.ts
-│   │   │   │   ├── productos.service.ts
-│   │   │   │   └── usuarios.service.ts
-│   │   │   └── app.config.ts
-│   │   └── assets/
-│   └── package.json
-└── README-BOLIVIA.md                      # Este archivo
+backend/src/modules/facturacion/
+├── dto/
+│   ├── create-factura.dto.ts      # Validación del NIT, Razón Social, etc.
+│   ├── filter-facturas.dto.ts      # Búsqueda por rango de fechas y estados SIAT
+│   └── enviar-factura.dto.ts      # Destinatario para WhatsApp/Email
+├── entities/
+│   └── factura.entity.ts          # Tabla facturas (asociada a ventas, almacena CUF)
+├── facturacion.controller.ts      # Endpoints REST expuestos
+├── facturacion.service.ts         # Orquestación de transacciones y estados
+├── siat.service.ts                # Conector de firma digital y envío al SIAT de Bolivia
+└── envio-factura.service.ts       # Integración con APIs de WhatsApp y correo electrónico
 ```
 
 ---
 
-## 🔐 Autenticación y Seguridad
+## 📈 Roadmap y Siguientes Pasos (Bolivia)
 
-### JWT (JSON Web Tokens)
-- Tokens seguros para autenticación
-- Expiración configurable
-- User info en localStorage
-
-### Bcrypt
-- Hashing de contraseñas
-- 10 rounds de hashing
-- Comparación segura
-
-### CORS
-- ✅ Habilitado para localhost:4200
-- ✅ Credenciales permitidas
-- ✅ Métodos: GET, POST, PATCH, DELETE, OPTIONS
+Con las características de POS, reportes de márgenes y facturación SIAT 100% completas, el plan de localización contempla:
+- [ ] **Soporte de Contingencia Offline**: Almacenamiento local de facturas en caso de caída del servidor del SIAT o corte de internet en tienda, para su posterior sincronización masiva automática (En Cola).
+- [ ] **Actualización de Leyendas del SIAT**: Sincronización automática de leyendas mensuales emitidas por impuestos nacionales mediante el API de catálogos (Planificado).
+- [ ] **Facturación de Compra/Venta por Lotes**: Integración con el módulo de compras para registrar facturas de proveedores bolivianos mediante escaneo de código de barra QR fiscal (Planificado).
 
 ---
 
-## 📊 Productos
-
-### Campos de Producto
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `codigo_producto` | STRING | Código único (ej: CEME-001) |
-| `nombre` | STRING | Nombre del producto |
-| `descripcion` | TEXT | Descripción detallada |
-| `precio_costo` | DECIMAL | Costo en Bs. |
-| `precio_venta` | DECIMAL | Precio venta en Bs. |
-| `margen_ganancia` | DECIMAL | Margen % (auto-calculado) |
-| `stock_actual` | INTEGER | Cantidad disponible |
-| `categoria_id` | UUID | Categoría del producto |
-| `estado` | STRING | ACTIVO / INACTIVO |
-
-### Cálculo de Margen
-```
-Margen % = ((Precio_Venta - Precio_Costo) / Precio_Costo) * 100
-```
-
-Ejemplo:
-- Costo: Bs. 18.50
-- Venta: Bs. 22.00
-- Margen: 18.92%
-
----
-
-## 🔄 API Endpoints
-
-### Autenticación
-```
-POST /api/auth/login
-Body: { email, password }
-Response: { access_token, user }
-```
-
-### Productos
-```
-GET /api/productos?page=1&limit=10      # Listar todos
-GET /api/productos/:id                  # Obtener uno
-POST /api/productos                      # Crear
-PATCH /api/productos/:id                # Actualizar
-DELETE /api/productos/:id               # Eliminar
-```
-
----
-
-## 🛠️ Configuración por País
-
-### Para agregar otro país
-1. Duplicar `country.config.ts`
-2. Cambiar configuración de moneda/zona horaria
-3. Crear nuevo pipe para formateo de moneda
-4. Actualizar `dashboard.component.html` con bandera
-
-### Monedas Soportadas (En el Futuro)
-- 🇧🇴 Bolivia: Bs. (BOB)
-- 🇦🇷 Argentina: ARS
-- 🇵🇪 Perú: S/. (PEN)
-- 🇪🇸 España: € (EUR)
-
----
-
-## 📝 Mejoras Futuras
-
-- [ ] Módulo de Ventas (Point of Sale)
-- [ ] Reportes de ventas e inventario
-- [ ] Integración con impresoras de recibos
-- [ ] Sistema de facturación
-- [ ] Sincronización en la nube
-- [ ] App mobile (React Native)
-- [ ] Soporte multi-empresa
-
----
-
-## 📞 Soporte
-
-Para reportar errores o sugerencias:
-- Revisar logs en console del navegador
-- Revisar terminal de backend para errores
-- Verificar conexión a PostgreSQL
-
----
-
-## 📄 Licencia
-
-Proyecto desarrollado para uso educativo y comercial en Bolivia.
-
----
-
-**Sistema POS Ferretería Bolivia** | v1.0 | 🇧🇴 2026
+**Sistema de Facturación Localizado para Bolivia** | v1.0 | 🇧🇴 2026
